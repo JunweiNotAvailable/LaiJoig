@@ -1,6 +1,6 @@
 import { View, Text, TouchableWithoutFeedback } from 'react-native'
 import React from 'react'
-import { globalStyles } from '../../utils/Constants'
+import { globalStyles } from '../utils/Constants'
 
 const Button = ( props ) => {
   return (

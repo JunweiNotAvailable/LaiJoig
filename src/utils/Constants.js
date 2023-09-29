@@ -1,9 +1,18 @@
+import { Platform } from 'react-native';
+
 export const globalStyles = {
+  safeArea: {
+    paddingTop: Platform.OS === 'android' ? 20 : 0,
+  },
   colors: {
     primary: "#f6a224",
     gray: "#ccc",
     green: '#70cd96',
     red: '#ec8265',
+    blue: '#03a5fc',
+  },
+  absolute: {
+    position: 'absolute',
   },
   flex1: {
     flex: 1,

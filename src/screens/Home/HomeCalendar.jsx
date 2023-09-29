@@ -1,16 +1,42 @@
 import { View, Text, StyleSheet } from 'react-native'
 import { useFonts } from 'expo-font';
 import React, { useEffect } from 'react';
-import Calendar from './components/Calendar';
-import ActivityList from './components/ActivityList';
-import { useHomeState } from './context/HomeContext';
+import Calendar from '../../components/Calendar';
+import ActivityList from '../../components/ActivityList';
+import { useHomeState } from '../../context/HomeContext';
+import axios from 'axios';
+import config from '../../../config.json';
+import { getDateString } from '../../utils/Functions';
 
 const HomeCalendar = ({ navigation, route }) => {
   let [fontsLoaded] = useFonts({
-    'Logo': require('../../assets/fonts/OnelySans.ttf')
+    'Logo': require('../../../assets/fonts/OnelySans.ttf')
   });
 
   const props = useHomeState();
+
+  // initial load activities
+  useEffect(() => {
+    async function initLoad() {
+      // load activities
+      const activitiesRes = await axios.get(`${config.api}/access-items`, { params: {
+        table: 'Laijoig-Activities',
+        filter: 'dateRange',
+        id: '',
+        month: getDateString(props.month).slice(0, 7),
+      }});
+      // load comments
+      const commentsRes = await axios.get(`${config.api}/access-items`, { params: {
+        table: 'Laijoig-Comments',
+        filter: 'date',
+        id: '',
+        month: getDateString(props.month).slice(0, 7)
+      }});
+      props.setActivities(activitiesRes.data);
+      props.setComments(commentsRes.data);
+    }
+    initLoad();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -56,6 +82,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    elevation: 3,
   }
 });
 

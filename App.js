@@ -3,12 +3,13 @@ import React, { useState } from "react";
 import { NavigationContainer, useRoute } from "@react-navigation/native";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Login, Chat, Search, Notifications, Profile, HomeCalendar, CreateActivity } from "./src/screens";
+import { Login, Chat, Search, Notifications, Profile, HomeCalendar, CreateActivity } from "./src";
 import { Entypo } from "@expo/vector-icons";
-import { View, Image, StyleSheet } from "react-native";
+import { View, Image, StyleSheet, Platform } from "react-native";
 import { globalStyles, urls } from "./src/utils/Constants";
 import { getDateString } from './src/utils/Functions';
-import { HomeStateProvider } from "./src/screens/context/HomeContext";
+import { HomeStateProvider } from "./src/context/HomeContext";
+import Comments from "./src/screens/Comments";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -21,6 +22,8 @@ const Home = () => {
         <Stack.Screen name='HomeCalendar' component={HomeCalendar}/>
         {/* add activity screen */}
         <Stack.Screen name='CreateActivity' component={CreateActivity}/>
+        {/* comments screen */}
+        <Stack.Screen name="Comments" component={Comments}/>
       </Stack.Navigator>
     </HomeStateProvider>
   )
@@ -35,7 +38,8 @@ const App = () => {
         tabBarShowLabel: false,
         tabBarStyle: {
           borderTopWidth: 0
-        }
+        },
+        tabBarHideOnKeyboard: Platform.OS === 'android',
       }}>
         {/* home */}
         <Tab.Screen name="Home" component={Home}

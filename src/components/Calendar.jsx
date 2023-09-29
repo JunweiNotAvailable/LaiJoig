@@ -2,8 +2,8 @@ import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import Button from './Button';
 import { Entypo } from '@expo/vector-icons';
-import { globalStyles } from '../../utils/Constants';
-import { getDateString, getMonthBoard } from '../../utils/Functions';
+import { globalStyles } from '../utils/Constants';
+import { getDateString, getMonthBoard } from '../utils/Functions';
 
 const Calendar = ( props ) => {
   const now = new Date();

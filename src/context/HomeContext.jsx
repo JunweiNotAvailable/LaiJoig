@@ -12,12 +12,14 @@ export const HomeStateProvider = ({ children }) => {
   const [selectedDate, setSelectedDate] = useState(now);
   // data
   const [activities, setActivities] = useState([]);
+  const [comments, setComments] = useState([]);
 
   return (
     <HomeStateContext.Provider value={{ 
       month, setMonth,
       selectedDate, setSelectedDate,
       activities, setActivities,
+      comments, setComments,
     }}>
       {children}
     </HomeStateContext.Provider>

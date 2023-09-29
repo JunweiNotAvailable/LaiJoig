@@ -40,12 +40,26 @@ export const getTimeString = (time) => {
   return `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`
 }
 
+// get min from string (hh:mm)
+export const getMinutesFromString = (time) => {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+}
+
+// reverse
+export const getTimeFromMinutes = (min) => {
+  min = Math.max(0, Math.min(min, 1439));
+  const h = Math.floor(min / 60);
+  const m = Math.floor(min % 60);
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
 // convert 24 format to 12 format
 export const to12HourFormat = (time24) => {
   const [hours, minutes] = time24.split(':').map(Number);
   const period = hours >= 12 ? '下午' : '上午';
   const hours12 = (hours % 12 || 12).toString();
-  return `${period}${hours12}：${minutes.toString().padStart(2, '0')}`;
+  return `${period}${hours12}:${minutes.toString().padStart(2, '0')}`;
 }
 
 // create random color
