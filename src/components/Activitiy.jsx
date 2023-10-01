@@ -2,13 +2,13 @@ import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 import React from 'react'
 import { globalStyles } from '../utils/Constants';
 import { getTimeFromNow, to12HourFormat } from '../utils/Functions';
-import Button from './Button';
 import { useNavigation } from '@react-navigation/native';
 
 const Activitiy = ( props ) => {
 
   const navigation = useNavigation();
-
+  const activityUser = props.users.filter(u => u.id === props.activity.userId)[0];
+  
   const commentCounts = props.comments.filter(c => c.activityId === props.activity.id).length;
 
   const handleClick = (to) => {
@@ -21,15 +21,15 @@ const Activitiy = ( props ) => {
 
   return (
     <TouchableWithoutFeedback onPress={() => handleClick('comments')}>
-      <View style={styles.container}>
+      <View style={[styles.container, { borderLeftColor: activityUser.color }]}>
         {/* top row */}
         <View style={[globalStyles.flexRow, globalStyles.justifyContent.spaceBetween, globalStyles.alignItems.center]}>
           <TouchableWithoutFeedback onPress={() => handleClick('user')}>
             <View style={[globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.flex1, styles.avatarRow]}>
-              <View style={[globalStyles.flexCenter, styles.avatar]}>
-                <Text style={styles.avatarText}>J</Text>
+              <View style={[globalStyles.flexCenter, styles.avatar, { backgroundColor: activityUser.color }]}>
+                <Text style={styles.avatarText}>{activityUser.name[0]}</Text>
               </View>
-              <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.username]}>Junwei</Text>
+              <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.username]}>{activityUser.name}</Text>
               <Text style={[styles.timeFromNow, globalStyles.flex1]} numberOfLines={1}>{getTimeFromNow(props.activity.iso)}</Text>
             </View>
           </TouchableWithoutFeedback>
@@ -49,7 +49,6 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderLeftColor: globalStyles.colors.blue,
     borderLeftWidth: 3,
   },
   avatarRow: {
@@ -59,7 +58,6 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 50,
-    backgroundColor: '#000',
   },
   avatarText: {
     color: '#fff',

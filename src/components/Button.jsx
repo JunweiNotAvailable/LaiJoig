@@ -5,7 +5,7 @@ import { globalStyles } from '../utils/Constants'
 const Button = ( props ) => {
   return (
     <TouchableWithoutFeedback onPress={props.onPress} key={props.key_ || ''}>
-      <View style={[globalStyles.flexRow, props.style]}>
+      <View style={[globalStyles.flexRow, globalStyles.alignItems.center, props.style]}>
         {props.icon ? props.icon : <></>}
         {props.text && <Text style={props.textStyle}>{props.text}</Text>}
       </View>

@@ -5,6 +5,7 @@ import { globalStyles } from '../../utils/Constants';
 import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString } from '../../utils/Functions';
 import Button from '../../components/Button';
 import { useHomeState } from '../../context/HomeContext';
+import { useAppState } from '../../context/AppContext';
 import DatePicker from '../../components/DatePicker';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -17,7 +18,7 @@ const buttonWidth = 22;
 const CreateActivity = () => {
 
   const navigation = useNavigation();
-  const props = useHomeState();
+  const props = { ...useAppState(), ...useHomeState() };
 
   const date = props.selectedDate;
   const now = new Date();
@@ -70,18 +71,23 @@ const CreateActivity = () => {
   // submit the activity
   const handleSubmit = async () => {
     if (!isValid()) return;
+    const startDateString = getDateString(startDate);
+    const endDateString = getDateString(endDate);
     const newActivity = {
       id: getRandomString(12),
       iso: new Date().toISOString(),
-      startDateString: getDateString(startDate),
-      endDateString: getDateString(endDate),
+      startDateString: startDateString,
+      endDateString: endDateString,
       startTime: startTime,
       endTime: endTime,
-      userId: 'junwei',
+      userId: props.user.id,
       description: description,
-      groupId: '',
+      groupId: props.group.id,
       custom: {},
     };
+    const fm = props.user.activityMonths[0] < startDateString ? props.user.activityMonths[0] : startDateString;
+    const em = props.user.activityMonths[1] > endDateString ? props.user.activityMonths[1] : endDateString;
+    const newUser = { ...props.user, activityMonths: [fm, em] };
     props.setActivities([...props.activities, newActivity]);
     // back to home page
     navigation.goBack();
@@ -89,6 +95,10 @@ const CreateActivity = () => {
     await axios.post(`${config.api}/access-item`, {
       table: 'Laijoig-Activities',
       data: newActivity
+    });
+    await axios.post(`${config.api}/access-item`, {
+      table: 'Laijoig-Users',
+      data: newUser
     });
   }
 

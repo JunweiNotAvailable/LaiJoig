@@ -10,6 +10,7 @@ export const globalStyles = {
     green: '#70cd96',
     red: '#ec8265',
     blue: '#03a5fc',
+    error: '#fa5448',
   },
   absolute: {
     position: 'absolute',
@@ -48,6 +49,7 @@ export const urls = {
   chatSelected: require('../../assets/images/chat-selected.png'),
   bell: require('../../assets/images/bell.png'),
   bellSelected: require('../../assets/images/bell-selected.png'),
+  settings: require('../../assets/images/settings.png'),
 }
 
 export const weekDays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];

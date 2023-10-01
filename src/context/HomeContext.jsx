@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { useAppState } from './AppContext';
 
 // Create a context
 const HomeStateContext = createContext();
@@ -10,16 +11,18 @@ export const HomeStateProvider = ({ children }) => {
   const now = new Date();
   const [month, setMonth] = useState(now);
   const [selectedDate, setSelectedDate] = useState(now);
+  const [loaded, setLoaded] = useState([]);
   // data
   const [activities, setActivities] = useState([]);
   const [comments, setComments] = useState([]);
 
   return (
-    <HomeStateContext.Provider value={{ 
+    <HomeStateContext.Provider value={{
       month, setMonth,
       selectedDate, setSelectedDate,
       activities, setActivities,
       comments, setComments,
+      loaded, setLoaded,
     }}>
       {children}
     </HomeStateContext.Provider>

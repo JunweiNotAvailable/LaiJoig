@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, Pressable, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { globalStyles, weekDays } from '../utils/Constants';
 import { getDateString } from '../utils/Functions';
@@ -10,7 +10,7 @@ const ActivityList = ( props ) => {
   const navigation = useNavigation();
 
   const selectedDateString = getDateString(props.selectedDate);
-  const [activities, setActivities] = useState([]);
+  const [activities, setActivities] = useState([]); 
 
   useEffect(() => {
     setActivities(props.activities.filter(a => a.startDateString <= selectedDateString && a.endDateString >= selectedDateString)
@@ -34,11 +34,17 @@ const ActivityList = ( props ) => {
         />
       </View>
       {/* scroll view */}
+      {props.loading ? 
+      <View style={[globalStyles.flex1, globalStyles.flexCenter]}>
+        <ActivityIndicator/>
+      </View>
+      :
       <ScrollView>
         <Pressable>
           {activities.map((activity, i) => {
             const activityComments = props.comments.filter(c => c.activityId === activity.id).sort((a, b) => a.iso > b.iso ? -1 : 1);
             const lastComment = activityComments.length > 0 && activityComments[0];
+            const lastCommentUser = props.users.find(u => u.id === lastComment.userId);
             return (
               <View style={styles.activityContainer} key={activity.id}>
                 <Activitiy
@@ -47,11 +53,11 @@ const ActivityList = ( props ) => {
                 />
                 {activityComments.length > 0 && 
                 <TouchableWithoutFeedback onPress={() => navigation.navigate('Comments', { activity: activity })}>
-                  <View style={[styles.lastComment, globalStyles.flexRow]}>
-                    <View style={[styles.avatar, globalStyles.flexCenter]}>
-                      <Text style={styles.avatarText}>J</Text>
+                  <View style={[styles.lastComment, globalStyles.flexRow, globalStyles.alignItems.center]}>
+                    <View style={[styles.avatar, globalStyles.flexCenter, { backgroundColor: lastCommentUser.color }]}>
+                      <Text style={styles.avatarText}>{lastCommentUser.name[0]}</Text>
                     </View>
-                    <Text style={styles.username}>Junwei</Text>
+                    <Text style={styles.username}>{lastCommentUser.name}</Text>
                     <Text style={[styles.lastMessage, globalStyles.flex1]} ellipsizeMode='tail' numberOfLines={1}>{lastComment.message}</Text>
                   </View>
                 </TouchableWithoutFeedback>}
@@ -59,7 +65,7 @@ const ActivityList = ( props ) => {
             )
           })}
         </Pressable>
-      </ScrollView>
+      </ScrollView>}
     </View>
   )
 }

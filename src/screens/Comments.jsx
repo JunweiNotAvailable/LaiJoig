@@ -1,6 +1,7 @@
 import { View, Text, TouchableWithoutFeedback, TextInput, ScrollView, KeyboardAvoidingView, StyleSheet, SafeAreaView, Keyboard, Pressable } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
 import { useHomeState } from '../context/HomeContext'
+import { useAppState } from '../context/AppContext';
 import { globalStyles, weekDays } from '../utils/Constants';
 import Toolbar from '../components/Toolbar';
 import Activitiy from '../components/Activitiy';
@@ -11,7 +12,7 @@ import config from '../../config.json';
 
 const Comments = ({ navigation, route }) => {
   
-  const props = useHomeState();
+  const props = { ...useAppState(), ...useHomeState() };
   const scrollViewRef = useRef();
   const [activity, setActivity] = useState(route.params.activity);
   const [comments, setComments] = useState(props.comments.filter(c => c.activityId === activity.id).sort((a, b) => a.iso < b.iso ? -1 : 1));
@@ -29,14 +30,15 @@ const Comments = ({ navigation, route }) => {
 
   // send the message
   const handleSubmit = async () => {
+    if (message.trim().length === 0) return;
     const newComment = {
       id: getRandomString(12),
       dateString: getDateString(props.selectedDate),
       iso: new Date().toISOString(),
       message: message,
-      userId: 'junwei',
+      userId: props.user.id,
       activityId: activity.id,
-      groupId: '',
+      groupId: props.group.id,
     };
     props.setComments([...props.comments, newComment]);
     setMessage('');
@@ -66,15 +68,16 @@ const Comments = ({ navigation, route }) => {
                 <ScrollView style={styles.commentsList} ref={scrollViewRef} onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })}>
                   <Pressable>
                     {comments.map((comment, i) => {
+                      const commentUser = props.users.find(u => u.id === comment.userId);
                       return (
                         <View style={styles.comment} key={comment.id}>
                           <View style={[globalStyles.flexRow, globalStyles.justifyContent.flexStart]}>
                             <TouchableWithoutFeedback onPress={handleClick}>
                               <View style={[globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.flex1, styles.avatarRow]}>
-                                <View style={[globalStyles.flexCenter, styles.avatar]}>
-                                  <Text style={styles.avatarText}>J</Text>
+                                <View style={[globalStyles.flexCenter, styles.avatar, { backgroundColor: commentUser.color }]}>
+                                  <Text style={styles.avatarText}>{commentUser.name[0]}</Text>
                                 </View>
-                                <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.username]}>Junwei</Text>
+                                <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.username]}>{commentUser.name}</Text>
                                 <Text style={[styles.timeFromNow, globalStyles.flex1]} numberOfLines={1}>{getTimeFromNow(comment.iso)}</Text>
                               </View>
                             </TouchableWithoutFeedback>
@@ -136,7 +139,6 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 50,
-    backgroundColor: '#000',
   },
   avatarText: {
     color: '#fff',
