@@ -4,84 +4,122 @@ import { globalStyles, urls } from '../../utils/Constants';
 import { useAppState } from '../../context/AppContext';
 import { useProfileState } from '../../context/ProfileContext';
 import { useUtilState } from '../../context/UtilContext';
-import Topbar from '../../components/Topbar';
 import Button from '../../components/Button';
 import Icon from 'react-native-vector-icons/Ionicons';
+import FeatherIcon from 'react-native-vector-icons/Feather';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadImage } from '../../utils/Functions';
+import axios from 'axios';
+import config from '../../../config.json';
 
 const Overview = ({ navigation, route }) => {
 
-  const props = { ...useAppState(), ...useUtilState(), ...useProfileState() };
+  const props = { ...useAppState(), ...useUtilState(), ...useProfileState(), ...route.params };
   const [showingInfo, setShowingInfo] = useState('schedule');
   const [activities, setActivities] = useState([]);
-  // top buttons
-  const topButtons = [
-    // setting
-    <Button 
-      icon={<View style={styles.settingIcon}>
-        <Image source={urls.settings} style={styles.settingIconImage}/>
-      </View>}
-      onPress={() => navigation.navigate('Settings')}
-    />
-  ];
+  const [showingImage, setShowingImage] = useState(false);
+  const [url, setUrl] = useState(props.urls[props.user.id]);
 
+  const handleImageClick = (item) => {
+    if (item === 'bg') {
+      setShowingImage(false);
+    }
+  }
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      const extension = result.assets[0].uri.slice(result.assets[0].uri.length - 4).replace('.', '');
+      const url = `data:image/jpeg;base64,${result.assets[0].base64}`;
+      setUrl(url);
+      props.setUrls({ ...props.urls, [props.user.id]: url });
+      // upload to database
+      const newUser = { ...props.user, url: `${props.user.id}.${extension}` };
+      await axios.post(`${config.api}/access-item`, { table: 'Laijoig-Users', data: newUser });
+      await uploadImage('laijoig-bucket', `${props.user.id}.${extension}`, url);
+    }
+  }
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={[globalStyles.safeArea, globalStyles.flex1]}>
-        <View style={[styles.topRow, globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.justifyContent.flexEnd]}>
-          <Button icon={<Icon name='menu-outline' style={styles.menuIcon}/>} onPress={() => navigation.navigate('Settings')}/>
-        </View>
-        <View style={[styles.body, globalStyles.flex1]}>
-          {/* profile view */}
-          <View style={styles.profileView}>
-            {/* avatar & username */}
-            <View style={[styles.userInfoRow, globalStyles.flexRow, globalStyles.alignItems.center]}>
-              <View style={[styles.avatar, globalStyles.flexCenter, { backgroundColor: props.user.color }]}>
-                <Text style={styles.avatarText}>{props.user.name[0]}</Text>
-              </View>
-              <View style={styles.userInfo}>
-                <Text style={styles.username}>{props.user.name}</Text>
-                <Text style={styles.id}>@{props.user.id}</Text>
-              </View>
-            </View>
-            <View style={styles.aboutMe}>
-              <Text style={styles.aboutMeTitle}>{props.user.title}</Text>
-              <Text style={styles.aboutMeText}>{props.user.aboutMe}</Text>
-            </View>
+    <>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <SafeAreaView style={[globalStyles.safeArea, globalStyles.flex1]}>
+          <View style={[styles.topRow, globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.justifyContent.flexEnd]}>
+            <Button icon={<Icon name='menu-outline' style={styles.menuIcon}/>} onPress={() => navigation.navigate('Settings')}/>
           </View>
-          {/* groups list */}
-          {/* <ScrollView horizontal style={[styles.groupsList]}>
-            {props.groups.map((group, i) => {
-              return (
-                <Pressable key={group.id}>
-                  <Button text={'行程'} style={[styles.groupButton, group.id === selectedGroup ? { borderBottomColor: '#000' } : {}]} onPress={() => setSelectedGroup(group.id)}/>
-                </Pressable>
-              )
-            })}
-          </ScrollView> */}
-          <View style={[globalStyles.flexRow, styles.groupsList]}>
-            {/* <Button text={'朋友'} style={[styles.groupButton, showingInfo === 'friends' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('friends')}/> */}
-            <Button text={'行程'} style={[styles.groupButton, showingInfo === 'schedule' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('schedule')}/>
+          <View style={[styles.body, globalStyles.flex1]}>
+            {/* profile view */}
+            <View style={styles.profileView}>
+              {/* avatar & username */}
+              <View style={[styles.userInfoRow, globalStyles.flexRow, globalStyles.alignItems.center]}>
+                <TouchableWithoutFeedback onPress={() => setShowingImage(true)}>
+                  <View style={[styles.avatar, globalStyles.flexCenter, { backgroundColor: props.user.color }]}>
+                    {url ? <Image style={styles.avatarImage} source={{ uri: url }}/> : <Text style={styles.avatarText}>{props.user.name[0]}</Text>}
+                  </View>
+                </TouchableWithoutFeedback>
+                <View style={styles.userInfo}>
+                  <Text style={styles.username}>{props.user.name}</Text>
+                  <Text style={styles.id}>@{props.user.id}</Text>
+                </View>
+              </View>
+              <View style={styles.aboutMe}>
+                <Text style={styles.aboutMeTitle}>{props.user.title}</Text>
+                <Text style={styles.aboutMeText}>{props.user.aboutMe}</Text>
+              </View>
+            </View>
+            {/* groups list */}
+            {/* <ScrollView horizontal style={[styles.groupsList]}>
+              {props.groups.map((group, i) => {
+                return (
+                  <Pressable key={group.id}>
+                    <Button text={'行程'} style={[styles.groupButton, group.id === selectedGroup ? { borderBottomColor: '#000' } : {}]} onPress={() => setSelectedGroup(group.id)}/>
+                  </Pressable>
+                )
+              })}
+            </ScrollView> */}
+            <View style={[globalStyles.flexRow, styles.groupsList]}>
+              {/* <Button text={'朋友'} style={[styles.groupButton, showingInfo === 'friends' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('friends')}/> */}
+              <Button text={'行程'} style={[styles.groupButton, showingInfo === 'schedule' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('schedule')}/>
+            </View>
+            {/* list */}
+            {showingInfo === 'friends' ? 
+              props.users.length > 1 ? <></>
+              : 
+              // empty
+              <View style={[styles.empty, globalStyles.flexCenter]}>
+                <Text style={styles.emptyText}>沒有朋友</Text>
+              </View>
+            : showingInfo === 'schedule' ?
+              activities.length > 0 ? <></>
+              : 
+              // empty
+              <View style={[styles.empty, globalStyles.flexCenter]}>
+                <Text style={styles.emptyText}>沒有行程</Text>
+              </View>
+            : <></>}
           </View>
-          {/* list */}
-          {showingInfo === 'friends' ? 
-            props.users.length > 1 ? <></>
-            : 
-            // empty
-            <View style={[styles.empty, globalStyles.flexCenter]}>
-              <Text style={styles.emptyText}>沒有朋友</Text>
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
+      {/* show image */}
+      {showingImage && 
+      <TouchableWithoutFeedback onPress={() => handleImageClick('bg')}>
+        <View style={styles.imageWindow}>
+          <TouchableWithoutFeedback onPress={pickImage}>
+            <View style={[styles.avatar, styles.imageAvatar, globalStyles.flexCenter, { backgroundColor: props.user.color }]}>
+              {url ? <Image style={styles.avatarImage} source={{ uri: url }}/> : <Text style={[styles.avatarText, styles.imageAvatarText]}>{props.user.name[0]}</Text>}
             </View>
-          : showingInfo === 'schedule' ?
-            activities.length > 0 ? <></>
-            : 
-            // empty
-            <View style={[styles.empty, globalStyles.flexCenter]}>
-              <Text style={styles.emptyText}>沒有行程</Text>
-            </View>
-          : <></>}
+          </TouchableWithoutFeedback>
+          <Button onPress={pickImage} style={styles.imageButton} textStyle={styles.imageButtonText} icon={<FeatherIcon name='image' size={22}/>} text={'變更照片'}/>
         </View>
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>}
+    </>
   )
 }
 
@@ -125,6 +163,11 @@ const styles = StyleSheet.create({
     aspectRatio: '1/1',
     borderRadius: 50,
     marginHorizontal: 8,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 200,
   },
   avatarText: {
     fontWeight: 'bold',
@@ -171,6 +214,33 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: '#aaa',
+  },
+
+  imageWindow: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    ...globalStyles.flexCenter,
+    backgroundColor: '#fff',
+  },
+  imageAvatar: {
+    borderRadius: 200,
+    width: '72%',
+    aspectRatio: '1/1',
+  },
+  imageAvatarText: {
+    fontSize: 64,
+  },
+  imageButton: {
+    marginTop: 32,
+    backgroundColor: '#eee',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+  },
+  imageButtonText: {
+    marginLeft: 12,
+    fontSize: 16,
   },
 });
 

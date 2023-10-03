@@ -43,24 +43,6 @@ const HomeCalendar = ({ navigation, route }) => {
     initLoad();
   }, []);
 
-  
-  useEffect(() => {
-    async function loadUsers() {
-      const newUsers = [];
-      for (const id of props.user.bosom) {
-        const newUser = (await axios.get(`${config.api}/access-item`, {params: {
-          table: 'Laijoig-Users',
-          id: id
-        }})).data.Item;
-        newUsers.push(newUser);
-      }
-      props.setUsers([...newUsers, props.user]);
-    }
-    if (props.user) {
-      loadUsers();
-    }
-  }, [props.user]);
-
   return (
     <View style={styles.container}>
       <View style={styles.logobar}>

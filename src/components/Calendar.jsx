@@ -75,18 +75,19 @@ const Calendar = ( props ) => {
             <View style={[globalStyles.flexRow, styles.row]} key={`row-${i}`}>
               {row.map((cell, j) => {
                 const dateString = cell ? getDateString(cell) : '';
+                const hasActivity = props.activities.find(a => a.startDateString <= dateString && a.endDateString >= dateString);
                 return (
                   cell ? 
                   <TouchableWithoutFeedback key={`cell-${i}-${j}`} onPress={() => props.setSelectedDate(cell)}>
                     <View style={styles.cell}>
                       {selectedString === dateString ? <View style={styles.selected}>
                         <Text style={[styles.cellText, styles.selectedText]}>{cell.getDate()}</Text>
-                        <View style={[styles.dot, { backgroundColor: globalStyles.colors.green }]}/>
+                        <View style={[styles.dot, { backgroundColor: hasActivity ? globalStyles.colors.green : 'transparent' }]}/>
                       </View>
                       : 
                       <>
                         <Text style={dateString < nowString ? { color: globalStyles.colors.gray } : styles.cellText}>{cell.getDate()}</Text>
-                        <View style={[styles.dot, { backgroundColor: globalStyles.colors.green }]}/>
+                        <View style={[styles.dot, { backgroundColor: hasActivity ? globalStyles.colors.green : 'transparent' }]}/>
                       </>}
                     </View>
                   </TouchableWithoutFeedback>

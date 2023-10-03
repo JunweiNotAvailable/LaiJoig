@@ -17,6 +17,7 @@ import config from '../../config.json';
 import ProfileSettings from "./Profile/ProfileSettings";
 import Account from "./Profile/Account";
 import Preference from "./Profile/Preference";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -27,11 +28,11 @@ const Home = () => {
     <HomeStateProvider>
       <Stack.Navigator initialRouteName='HomeCalendar' screenOptions={{ headerShown: false }}>
         {/* calendar screen */}
-        <Stack.Screen name='HomeCalendar' component={HomeCalendar}/>
+        <Stack.Screen name='HomeCalendar' component={HomeCalendar} />
         {/* add activity screen */}
-        <Stack.Screen name='CreateActivity' component={CreateActivity}/>
+        <Stack.Screen name='CreateActivity' component={CreateActivity} />
         {/* comments screen */}
-        <Stack.Screen name="Comments" component={Comments}/>
+        <Stack.Screen name="Comments" component={Comments} />
       </Stack.Navigator>
     </HomeStateProvider>
   )
@@ -59,22 +60,34 @@ const Notifications = () => {
 }
 
 // profile screen
-const Profile = () => {
+const Profile = ({ navigation, route }) => {
+
+  const toSplash = route.params.toSplash;
+
+  React.useLayoutEffect(() => {
+    // const routeName = getFocusedRouteNameFromRoute(route);
+    // if (routeName === "Overview") {
+    //   navigation.setOptions({ tabBarStyle: { display: 'flex', borderTopWidth: 0 } });
+    // } else {
+    //   navigation.setOptions({ tabBarStyle: { display: 'none' } });
+    // }
+  }, [navigation, route]);
+
   return (
     <ProfileStateProvider>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName="Overview" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Overview" component={Overview}/>
-        <Stack.Screen name="Settings" component={Settings}/>
-        <Stack.Screen name="ProfileSettings" component={ProfileSettings}/>
-        <Stack.Screen name="Account" component={Account}/>
-        <Stack.Screen name="Preference" component={Preference}/>
+        <Stack.Screen name="Settings" component={Settings} initialParams={{ toSplash: toSplash }} />
+        <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
+        <Stack.Screen name="Account" component={Account} />
+        <Stack.Screen name="Preference" component={Preference} />
       </Stack.Navigator>
     </ProfileStateProvider>
   )
 }
 
 // main page
-const Main = () => {
+const Main = ({ navigation, route }) => {
 
   const props = { ...useUtilState(), ...useAppState() };
 
@@ -82,10 +95,12 @@ const Main = () => {
     async function loadGroups() {
       const newGroups = [];
       for (const id of props.user.groups) {
-        const res = (await axios.get(`${config.api}/access-item`, {params: {
-          table: 'Laijoig-Groups',
-          id: id,
-        }})).data.Item;
+        const res = (await axios.get(`${config.api}/access-item`, {
+          params: {
+            table: 'Laijoig-Groups',
+            id: id,
+          }
+        })).data.Item;
         newGroups.push(res);
       }
       props.setGroups(newGroups);
@@ -95,13 +110,16 @@ const Main = () => {
     }
   }, [props.user]);
 
+  const toSplash = () => {
+    navigation.replace('Splash');
+  }
 
   return (
     <Tab.Navigator screenOptions={{
       headerShown: false,
       tabBarShowLabel: false,
       tabBarStyle: {
-        borderTopWidth: 0
+        borderTopWidth: 0,
       },
       tabBarHideOnKeyboard: Platform.OS === 'android',
     }}>
@@ -109,7 +127,7 @@ const Main = () => {
       <Tab.Screen name="Home" component={Home}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Entypo name="home" size={24} color={focused ? globalStyles.colors.primary : '#000'}/>
+            <Entypo name="home" size={24} color={focused ? globalStyles.colors.primary : '#000'} />
           ),
         }}
       />
@@ -117,34 +135,34 @@ const Main = () => {
       <Tab.Screen name="Chat" component={Chat} options={{
         tabBarIcon: ({ focused }) => (
           <View style={styles.iconStyle}>
-            <Image source={focused ? urls.chatSelected : urls.chat} style={styles.imageStyle}/>
+            <Image source={focused ? urls.chatSelected : urls.chat} style={styles.imageStyle} />
           </View>
         ),
-      }}/>
+      }} />
       {/* search */}
       <Tab.Screen name="Search" component={Search} options={{
         tabBarIcon: ({ focused }) => (
-          <Entypo name="magnifying-glass" size={24} color={focused ? globalStyles.colors.primary : '#000'}/>
+          <Entypo name="magnifying-glass" size={24} color={focused ? globalStyles.colors.primary : '#000'} />
         ),
-      }}/>
+      }} />
       {/* notifications */}
       <Tab.Screen name="Notifications" component={Notifications} options={{
         tabBarIcon: ({ focused }) => (
           <View style={styles.iconStyle}>
-            <Image source={focused ? urls.bellSelected : urls.bell} style={styles.imageStyle}/>
+            <Image source={focused ? urls.bellSelected : urls.bell} style={styles.imageStyle} />
           </View>
         ),
-      }}/>
+      }} />
       {/* profile */}
-      <Tab.Screen name="Profile" component={Profile} options={{
+      <Tab.Screen name="Profile" component={Profile} initialParams={{ toSplash: toSplash }} options={{
         tabBarIcon: ({ focused }) => (
           <View style={styles.iconStyle}>
-            <Image source={focused ? urls.userSelected : urls.user} style={styles.imageStyle}/>
+            <Image source={focused ? urls.userSelected : urls.user} style={styles.imageStyle} />
           </View>
         ),
       }} listeners={({ navigation, route }) => ({
         tabPress: () => props.setTrigger(!props.trigger)
-      })}/>
+      })} />
     </Tab.Navigator>
   )
 }

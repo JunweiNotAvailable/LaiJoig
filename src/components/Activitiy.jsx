@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native'
+import { View, Image, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 import React from 'react'
 import { globalStyles } from '../utils/Constants';
 import { getTimeFromNow, to12HourFormat } from '../utils/Functions';
@@ -8,6 +8,7 @@ const Activitiy = ( props ) => {
 
   const navigation = useNavigation();
   const activityUser = props.users.filter(u => u.id === props.activity.userId)[0];
+  const url = props.urls[props.activity.userId];
   
   const commentCounts = props.comments.filter(c => c.activityId === props.activity.id).length;
 
@@ -27,7 +28,7 @@ const Activitiy = ( props ) => {
           <TouchableWithoutFeedback onPress={() => handleClick('user')}>
             <View style={[globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.flex1, styles.avatarRow]}>
               <View style={[globalStyles.flexCenter, styles.avatar, { backgroundColor: activityUser.color }]}>
-                <Text style={styles.avatarText}>{activityUser.name[0]}</Text>
+                {url ? <Image source={{ uri: url }} style={styles.avatarImage} /> : <Text style={styles.avatarText}>{activityUser.name[0]}</Text>}
               </View>
               <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.username]}>{activityUser.name}</Text>
               <Text style={[styles.timeFromNow, globalStyles.flex1]} numberOfLines={1}>{getTimeFromNow(props.activity.iso)}</Text>
@@ -58,6 +59,11 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 50,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
   },
   avatarText: {
     color: '#fff',

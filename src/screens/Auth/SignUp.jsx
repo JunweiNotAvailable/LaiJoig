@@ -55,6 +55,7 @@ const SignUp = ({ navigation }) => {
     const newUser = {
       id: props.userId,
       name: username,
+      url: '',
       email: '',
       password: hash,
       color: getRandomHexColor(),

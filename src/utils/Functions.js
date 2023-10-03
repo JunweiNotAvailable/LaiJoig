@@ -224,43 +224,20 @@ export const getExtension = (filename) => {
     return filename.substring(extensionIndex);
 }
 
-// access images from s3
-export const uploadImage = async (imageFile) => {
-  if (imageFile === null) return { imageName: '', url: '' };
-  const reader = new FileReader();
-  const uploadPromise = new Promise((resolve, reject) => {
-    reader.onload = async function () {
-      const imageBase64 = reader.result?.toString()?.split(',')[1];
-      const imageName = getRandomString(16) + getExtension(imageFile.name);
-      const url = reader.result;
-      await axios.post(`${config.api.s3}/access-image`, {
-        bucketName: 'jw-playable-time-bucket',
-        name: imageName,
-        image: imageBase64,
-      });
-      resolve({ imageName: imageName, url: url });
-    };
-    reader.onerror = (error) => reject(error);
+// upload images to s3
+export const uploadImage = async (bucketName, imageName, url) => {
+  const imageBase64 = url.split(',')[1];
+  await axios.post(`${config.s3}/access-image`, {
+    bucketName: bucketName,
+    name: imageName,
+    image: imageBase64,
   });
-  reader.readAsDataURL(imageFile);
-  return await uploadPromise;
 };
 
 // get image from s3
-export const getImageUrl = async (filename) => {
+// get image from s3
+export const getImageUrl = async (bucketName, filename) => {
   if (!filename) return '';
-  const response = await axios.get(`${config.api.s3}/access-image?bucketName=jw-playable-time-bucket&fileName=${filename}`);
+  const response = await axios.get(`${config.s3}/access-image?bucketName=${bucketName}&fileName=${filename}`);
   return 'data:image/jpeg;base64,' + response.data;
-}
-
-// delete image from s3
-export const deleteImage = async (filename) => {
-  await axios.delete(`${config.api.s3}/access-image?bucketName=jw-playable-time-bucket&fileName=${filename}`);
-}
-
-// get history
-export const pushHistory = (history, newPage) => {
-  let tmp = [ ...history, newPage ].reverse();
-  const result = tmp.slice(0, tmp.indexOf(0) + 1).reverse();
-  return result;
 }

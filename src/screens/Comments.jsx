@@ -1,4 +1,4 @@
-import { View, Text, TouchableWithoutFeedback, TextInput, ScrollView, KeyboardAvoidingView, StyleSheet, SafeAreaView, Keyboard, Pressable } from 'react-native'
+import { View, Image, Text, TouchableWithoutFeedback, TextInput, ScrollView, KeyboardAvoidingView, StyleSheet, SafeAreaView, Keyboard, Pressable } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
 import { useHomeState } from '../context/HomeContext'
 import { useAppState } from '../context/AppContext';
@@ -69,13 +69,14 @@ const Comments = ({ navigation, route }) => {
                   <Pressable>
                     {comments.map((comment, i) => {
                       const commentUser = props.users.find(u => u.id === comment.userId);
+                      const url = props.urls[commentUser.id];
                       return (
                         <View style={styles.comment} key={comment.id}>
                           <View style={[globalStyles.flexRow, globalStyles.justifyContent.flexStart]}>
                             <TouchableWithoutFeedback onPress={handleClick}>
                               <View style={[globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.flex1, styles.avatarRow]}>
                                 <View style={[globalStyles.flexCenter, styles.avatar, { backgroundColor: commentUser.color }]}>
-                                  <Text style={styles.avatarText}>{commentUser.name[0]}</Text>
+                                  {url ? <Image source={{ uri: url }} style={styles.avatarImage} /> : <Text style={styles.avatarText}>{commentUser.name[0]}</Text>}
                                 </View>
                                 <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.username]}>{commentUser.name}</Text>
                                 <Text style={[styles.timeFromNow, globalStyles.flex1]} numberOfLines={1}>{getTimeFromNow(comment.iso)}</Text>
@@ -139,6 +140,11 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 50,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
   },
   avatarText: {
     color: '#fff',
