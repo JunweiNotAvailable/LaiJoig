@@ -42,17 +42,19 @@ const ActivityList = ( props ) => {
       <ScrollView>
         <Pressable>
           {activities.map((activity, i) => {
-            const activityComments = props.comments.filter(c => c.activityId === activity.id).sort((a, b) => a.iso > b.iso ? -1 : 1);
+            const activityComments = props.comments.filter(c => c.activityId === activity.id && c.dateString === selectedDateString).sort((a, b) => a.iso > b.iso ? -1 : 1);
             const lastComment = activityComments.length > 0 && activityComments[0];
             const lastCommentUser = props.users.find(u => u.id === lastComment.userId);
-            const url = props.urls[lastCommentUser.id];
+            const url = props.urls[lastCommentUser?.id];
+            const custom = activity.custom[selectedDateString];
             return (
+              !custom?.delete && 
               <View style={styles.activityContainer} key={activity.id}>
                 <Activitiy
                   { ...props }
                   activity={activity}
                 />
-                {activityComments.length > 0 && 
+                {(activityComments.length > 0) && 
                 <TouchableWithoutFeedback onPress={() => navigation.navigate('Comments', { activity: activity })}>
                   <View style={[styles.lastComment, globalStyles.flexRow, globalStyles.alignItems.center]}>
                     <View style={[styles.avatar, globalStyles.flexCenter, { backgroundColor: lastCommentUser.color }]}>

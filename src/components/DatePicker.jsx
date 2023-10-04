@@ -7,15 +7,10 @@ import { Entypo } from '@expo/vector-icons';
 
 const DatePicker = ( props ) => {
 
-  const [minDate, setMinDate] = useState(new Date('2001-10-23'));
+  const [minDate, setMinDate] = useState(props.picking === 'end' ? props.startDate : props.minDate || new Date('2001-10-23'));
+  const [maxDate, setMaxDate] = useState(!props.maxDate ? props.picking === 'end' ? getDatePlus30(props.startDate) : new Date('9999-12-31') : props.maxDate);
   const [month, setMonth] = useState(props.picking === 'start' ? props.startDate : props.endDate);
   const [board, setBoard] = useState(getMonthBoard(month.getFullYear(), month.getMonth() + 1));
-
-  useEffect(() => {
-    if (props.picking === 'end') {
-      setMinDate(props.startDate);
-    }
-  }, []);
 
   useEffect(() => {
     setBoard(getMonthBoard(month.getFullYear(), month.getMonth() + 1));
@@ -27,7 +22,7 @@ const DatePicker = ( props ) => {
       props.setPicking('');
       return;
     }
-    if (item === 'picker' || item < getDateString(minDate)) return;
+    if (item === 'picker' || (item < getDateString(minDate)) || item > getDateString(maxDate)) return;
     if (props.picking === 'start') {
       props.setStartDate(new Date(item));
     } else {
@@ -77,7 +72,7 @@ const DatePicker = ( props ) => {
                           cell ? 
                           <TouchableWithoutFeedback key={`cell-${i}-${j}`} onPress={() => handleClick(dateString)}>
                             <View style={styles.cell}>
-                              {dateString >= getDateString(minDate) ? 
+                              {dateString >= getDateString(minDate) && dateString <= getDateString(maxDate) ? 
                               // selected
                               dateString === (props.picking === 'start' ? getDateString(props.startDate) : getDateString(props.endDate)) ? <View style={styles.selected}>
                                 <Text style={[styles.cellText, styles.selectedText]}>{cell.getDate()}</Text>
@@ -168,5 +163,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+const getDatePlus30 = (date) => {
+  const newDate = new Date(date);
+  newDate.setDate(newDate.getDate() + 30);
+  return newDate;
+}
 
 export default DatePicker

@@ -29,15 +29,20 @@ export const AppStateProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       (async () => {
-        const newUsers = [];
-        for (const id of user.bosom) {
-          const newUser = (await axios.get(`${config.api}/access-item`, {params: {
-            table: 'Laijoig-Users',
-            id: id
-          }})).data.Item;
-          newUsers.push(newUser);
-        }
-        setUsers([...newUsers, user]);
+        // const newUsers = [];
+        // for (const id of user.bosom) {
+        //   const newUser = (await axios.get(`${config.api}/access-item`, {params: {
+        //     table: 'Laijoig-Users',
+        //     id: id
+        //   }})).data.Item;
+        //   newUsers.push(newUser);
+        // }
+        // setUsers([...newUsers, user]);
+        const newUsers = (await axios.get(`${config.api}/access-items`, {params: {
+          table: 'Laijoig-Users',
+          filter: ''
+        }})).data;
+        setUsers(newUsers);
       })();
     }
   }, [user]);

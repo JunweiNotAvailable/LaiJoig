@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { useEffect, createContext, useContext, useState } from 'react';
 import { useAppState } from './AppContext';
 
 // Create a context
@@ -15,6 +15,10 @@ export const HomeStateProvider = ({ children }) => {
   // data
   const [activities, setActivities] = useState([]);
   const [comments, setComments] = useState([]);
+
+  useEffect(() => {
+    setMonth(selectedDate);
+  }, [selectedDate]);
 
   return (
     <HomeStateContext.Provider value={{

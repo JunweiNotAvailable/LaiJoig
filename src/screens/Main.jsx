@@ -18,21 +18,26 @@ import ProfileSettings from "./Profile/ProfileSettings";
 import Account from "./Profile/Account";
 import Preference from "./Profile/Preference";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import ProfileBrief from "./ProfileBrief";
+import EditActivity from "./Home/EditActivity";
+import { ChatStateProvider } from "../context/ChatContext";
+import GroupsList from "./Chat/GroupsList";
+import ChatRoom from "./Chat/ChatRoom";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 // home screen
 const Home = () => {
+
   return (
     <HomeStateProvider>
       <Stack.Navigator initialRouteName='HomeCalendar' screenOptions={{ headerShown: false }}>
-        {/* calendar screen */}
         <Stack.Screen name='HomeCalendar' component={HomeCalendar} />
-        {/* add activity screen */}
         <Stack.Screen name='CreateActivity' component={CreateActivity} />
-        {/* comments screen */}
+        <Stack.Screen name='EditActivity' component={EditActivity}/>
         <Stack.Screen name="Comments" component={Comments} />
+        <Stack.Screen name="ProfileBrief" component={ProfileBrief} />
       </Stack.Navigator>
     </HomeStateProvider>
   )
@@ -41,7 +46,12 @@ const Home = () => {
 // chat screen
 const Chat = () => {
   return (
-    <></>
+    <ChatStateProvider>
+      <Stack.Navigator initialRouteName="GroupsList" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="GroupsList" component={GroupsList}/>
+        <Stack.Screen name="ChatRoom" component={ChatRoom}/>
+      </Stack.Navigator>
+    </ChatStateProvider>
   )
 }
 
@@ -77,9 +87,12 @@ const Profile = ({ navigation, route }) => {
     <ProfileStateProvider>
       <Stack.Navigator initialRouteName="Overview" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Overview" component={Overview}/>
+        <Stack.Screen name="ProfileBrief" component={ProfileBrief} />
+        <Stack.Screen name="Comments" component={Comments} />
         <Stack.Screen name="Settings" component={Settings} initialParams={{ toSplash: toSplash }} />
         <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
         <Stack.Screen name="Account" component={Account} />
+        <Stack.Screen name='EditActivity' component={EditActivity}/>
         <Stack.Screen name="Preference" component={Preference} />
       </Stack.Navigator>
     </ProfileStateProvider>
@@ -140,11 +153,11 @@ const Main = ({ navigation, route }) => {
         ),
       }} />
       {/* search */}
-      <Tab.Screen name="Search" component={Search} options={{
+      {/* <Tab.Screen name="Search" component={Search} options={{
         tabBarIcon: ({ focused }) => (
           <Entypo name="magnifying-glass" size={24} color={focused ? globalStyles.colors.primary : '#000'} />
         ),
-      }} />
+      }} /> */}
       {/* notifications */}
       <Tab.Screen name="Notifications" component={Notifications} options={{
         tabBarIcon: ({ focused }) => (

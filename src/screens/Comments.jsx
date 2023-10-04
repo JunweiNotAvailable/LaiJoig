@@ -9,23 +9,25 @@ import { getDateString, getTimeFromNow, getRandomString } from '../utils/Functio
 import Button from '../components/Button';
 import axios from 'axios';
 import config from '../../config.json';
+import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
 const Comments = ({ navigation, route }) => {
   
   const props = { ...useAppState(), ...useHomeState() };
+  const selectedDateString = getDateString(props.selectedDate);
   const scrollViewRef = useRef();
   const [activity, setActivity] = useState(route.params.activity);
-  const [comments, setComments] = useState(props.comments.filter(c => c.activityId === activity.id).sort((a, b) => a.iso < b.iso ? -1 : 1));
+  const [comments, setComments] = useState(props.comments.filter(c => c.activityId === activity.id && selectedDateString === c.dateString).sort((a, b) => a.iso < b.iso ? -1 : 1));
 
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    setComments(props.comments.filter(c => c.activityId === activity.id).sort((a, b) => a.iso < b.iso ? -1 : 1));
+    setComments(props.comments.filter(c => c.activityId === activity.id && selectedDateString === c.dateString).sort((a, b) => a.iso < b.iso ? -1 : 1));
   }, [props.comments]);
 
   // when click on the avatar
-  const handleClick = () => {
-
+  const handleClick = (user) => {
+    navigation.navigate('ProfileBrief', { briefUser: user });
   }
 
   // send the message
@@ -54,10 +56,13 @@ const Comments = ({ navigation, route }) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={globalStyles.safeArea}>
           <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
-            <Toolbar text={'留言'}/>
+            <Toolbar text={'活動'}/>
             <View style={[styles.body, globalStyles.flex1]}>
               {/* activity */}
-              <Text style={styles.date}>{getDateString(props.selectedDate).replaceAll('-', ' / ')} {weekDays[props.selectedDate.getDay()]}</Text>
+              <View style={[globalStyles.flexRow, globalStyles.justifyContent.spaceBetween, globalStyles.alignItems.center]}>
+                <Text style={styles.date}>{selectedDateString.replaceAll('-', ' / ')} {weekDays[props.selectedDate.getDay()]}</Text>
+                {props.user.id === activity.userId && <Button style={{ padding: 8 }} icon={<AntDesignIcon name="edit" size={20}/>} onPress={() => navigation.navigate('EditActivity', { activity: activity })}/>}
+              </View>
               <Activitiy
                 { ...props }
                 activity={activity}
@@ -73,7 +78,7 @@ const Comments = ({ navigation, route }) => {
                       return (
                         <View style={styles.comment} key={comment.id}>
                           <View style={[globalStyles.flexRow, globalStyles.justifyContent.flexStart]}>
-                            <TouchableWithoutFeedback onPress={handleClick}>
+                            <TouchableWithoutFeedback onPress={() => handleClick(commentUser)}>
                               <View style={[globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.flex1, styles.avatarRow]}>
                                 <View style={[globalStyles.flexCenter, styles.avatar, { backgroundColor: commentUser.color }]}>
                                   {url ? <Image source={{ uri: url }} style={styles.avatarImage} /> : <Text style={styles.avatarText}>{commentUser.name[0]}</Text>}

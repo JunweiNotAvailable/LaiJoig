@@ -20,7 +20,7 @@ const HomeCalendar = ({ navigation, route }) => {
 
   // initial load activities
   useEffect(() => {
-    async function initLoad() {
+    (async () => {
       // load activities
       const activitiesRes = await axios.get(`${config.api}/access-items`, { params: {
         table: 'Laijoig-Activities',
@@ -39,9 +39,14 @@ const HomeCalendar = ({ navigation, route }) => {
       props.setComments(commentsRes.data);
       props.setLoaded([getDateString(props.month).slice(0, 7)]);
       setLoading(false);
-    }
-    initLoad();
+    })();
   }, []);
+
+  useEffect(() => {
+    if (route?.params?.date) {
+      props.setSelectedDate(route.params.date);
+    }
+  }, [route]);
 
   return (
     <View style={styles.container}>

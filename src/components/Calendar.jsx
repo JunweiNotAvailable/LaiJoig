@@ -75,7 +75,8 @@ const Calendar = ( props ) => {
             <View style={[globalStyles.flexRow, styles.row]} key={`row-${i}`}>
               {row.map((cell, j) => {
                 const dateString = cell ? getDateString(cell) : '';
-                const hasActivity = props.activities.find(a => a.startDateString <= dateString && a.endDateString >= dateString);
+                const foundActivity = props.activities.find(a => a.startDateString <= dateString && a.endDateString >= dateString);
+                const hasActivity = foundActivity && !foundActivity.custom[dateString]?.delete;
                 return (
                   cell ? 
                   <TouchableWithoutFeedback key={`cell-${i}-${j}`} onPress={() => props.setSelectedDate(cell)}>

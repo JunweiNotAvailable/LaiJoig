@@ -1,33 +1,34 @@
-import { SafeAreaView, Pressable, ActivityIndicator, TouchableWithoutFeedback, Image, Keyboard, View, Text, StyleSheet, ScrollView } from 'react-native'
+import { SafeAreaView, ActivityIndicator, TouchableWithoutFeedback, Image, Keyboard, View, Text, StyleSheet, ScrollView } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react';
-import { globalStyles, urls } from '../../utils/Constants';
-import { useAppState } from '../../context/AppContext';
-import { useProfileState } from '../../context/ProfileContext';
-import { useUtilState } from '../../context/UtilContext';
-import Button from '../../components/Button';
+import { globalStyles, urls } from '../utils/Constants';
+import { useAppState } from '../context/AppContext';
+import { useProfileState } from '../context/ProfileContext';
+import { useUtilState } from '../context/UtilContext';
+import Button from '../components/Button';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FeatherIcon from 'react-native-vector-icons/Feather';
-import * as ImagePicker from 'expo-image-picker';
-import { getAllMonthsBetween, getDateString, getDateStringsBetween, getTimeString, uploadImage } from '../../utils/Functions';
 import axios from 'axios';
-import config from '../../../config.json';
-import Activitiy from '../../components/Activitiy';
+import config from '../../config.json';
+import Toolbar from '../components/Toolbar';
+import { getAllMonthsBetween, getDateStringsBetween, getDateString } from '../utils/Functions';
+import Activitiy from '../components/Activitiy';
 
-const Overview = ({ navigation, route }) => {
+const ProfileBrief = ({ navigation, route }) => {
 
-  const props = { ...useAppState(), ...useUtilState(), ...useProfileState(), ...route.params };
+  const props = { ...useAppState(), ...useUtilState(), ...route.params };
+  const [user, setUser] = useState(props.briefUser);
   const [showingInfo, setShowingInfo] = useState('schedule');
   const [activities, setActivities] = useState([]);
-  const [splitedActivities, setSplitedActivities] = useState([]);
   const [comments, setComments] = useState([]);
+  const [splitedActivities, setSplitedActivities] = useState([]);
   const [showingImage, setShowingImage] = useState(false);
-  const [url, setUrl] = useState(props.urls[props.user.id]);
+  const [url, setUrl] = useState(props.urls[user.id]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const nowString = getDateString(new Date()).slice(0, 7);
-      const activityMonths = props.user.activityMonths;
+      const activityMonths = user.activityMonths;
       const allMonths = getAllMonthsBetween(new Date(activityMonths[0]), new Date(activityMonths[1]));
       let newActivities = [];
       let newComments = [];
@@ -48,7 +49,7 @@ const Overview = ({ navigation, route }) => {
           month: m
         }});
         // update
-        newActivities = [ ...newActivities, ...activitiesRes.data ].filter(a => a.userId === props.user.id);
+        newActivities = [ ...newActivities, ...activitiesRes.data ].filter(a => a.userId === user.id);
         newComments = [ ...newComments, ...commentsRes.data ];
       }
       setActivities(Array.from(new Set(newActivities.map(a => a.id))).map(id => newActivities.find(a => a.id === id)));
@@ -90,35 +91,9 @@ const Overview = ({ navigation, route }) => {
       }));
   }, [activities]);
 
-  // hide image window
-  useEffect(() => {
-    setShowingImage(false);
-  }, [props.trigger]);
-
   const handleImageClick = (item) => {
     if (item === 'bg') {
       setShowingImage(false);
-    }
-  }
-
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-      base64: true,
-    });
-
-    if (!result.canceled) {
-      const extension = result.assets[0].uri.slice(result.assets[0].uri.length - 4).replace('.', '');
-      const url = `data:image/jpeg;base64,${result.assets[0].base64}`;
-      setUrl(url);
-      props.setUrls({ ...props.urls, [props.user.id]: url });
-      // upload to database
-      const newUser = { ...props.user, url: `${props.user.id}.${extension}` };
-      await axios.post(`${config.api}/access-item`, { table: 'Laijoig-Users', data: newUser });
-      await uploadImage('laijoig-bucket', `${props.user.id}.${extension}`, url);
     }
   }
 
@@ -126,46 +101,34 @@ const Overview = ({ navigation, route }) => {
     <>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={[globalStyles.safeArea, globalStyles.flex1]}>
-          <View style={[styles.topRow, globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.justifyContent.flexEnd]}>
-            <Button icon={<Icon name='menu-outline' style={styles.menuIcon}/>} onPress={() => navigation.navigate('Settings')}/>
-          </View>
           <View style={[styles.body, globalStyles.flex1]}>
+            <Toolbar text={''}/>
             {/* profile view */}
             <View style={styles.profileView}>
               {/* avatar & username */}
               <View style={[styles.userInfoRow, globalStyles.flexRow, globalStyles.alignItems.center]}>
                 <TouchableWithoutFeedback onPress={() => setShowingImage(true)}>
-                  <View style={[styles.avatar, globalStyles.flexCenter, { backgroundColor: props.user.color }]}>
-                    {url ? <Image style={styles.avatarImage} source={{ uri: url }}/> : <Text style={styles.avatarText}>{props.user.name[0]}</Text>}
+                  <View style={[styles.avatar, globalStyles.flexCenter, { backgroundColor: user.color }]}>
+                    {url ? <Image style={styles.avatarImage} source={{ uri: url }}/> : <Text style={styles.avatarText}>{user.name[0]}</Text>}
                   </View>
                 </TouchableWithoutFeedback>
                 <View style={styles.userInfo}>
-                  <Text style={styles.username}>{props.user.name}</Text>
-                  <Text style={styles.id}>@{props.user.id}</Text>
+                  <Text style={styles.username}>{user.name}</Text>
+                  <Text style={styles.id}>@{user.id}</Text>
                 </View>
               </View>
               <View style={styles.aboutMe}>
-                <Text style={styles.aboutMeTitle}>{props.user.title}</Text>
-                <Text style={styles.aboutMeText}>{props.user.aboutMe}</Text>
+                <Text style={styles.aboutMeTitle}>{user.title}</Text>
+                <Text style={styles.aboutMeText}>{user.aboutMe}</Text>
               </View>
             </View>
-            {/* groups list */}
-            {/* <ScrollView horizontal style={[styles.groupsList]}>
-              {props.groups.map((group, i) => {
-                return (
-                  <Pressable key={group.id}>
-                    <Button text={'行程'} style={[styles.groupButton, group.id === selectedGroup ? { borderBottomColor: '#000' } : {}]} onPress={() => setSelectedGroup(group.id)}/>
-                  </Pressable>
-                )
-              })}
-            </ScrollView> */}
             <View style={[globalStyles.flexRow, styles.groupsList]}>
               {/* <Button text={'朋友'} style={[styles.groupButton, showingInfo === 'friends' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('friends')}/> */}
               <Button text={'行程'} style={[styles.groupButton, showingInfo === 'schedule' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('schedule')}/>
             </View>
             {/* list */}
             {showingInfo === 'friends' ? 
-              props.users.length > 1 ? <></>
+              users.length > 1 ? <></>
               : 
               // empty
               <View style={[styles.empty, globalStyles.flexCenter]}>
@@ -203,12 +166,9 @@ const Overview = ({ navigation, route }) => {
       {showingImage && 
       <TouchableWithoutFeedback onPress={() => handleImageClick('bg')}>
         <View style={styles.imageWindow}>
-          <TouchableWithoutFeedback onPress={pickImage}>
-            <View style={[styles.avatar, styles.imageAvatar, globalStyles.flexCenter, { backgroundColor: props.user.color }]}>
-              {url ? <Image style={styles.avatarImage} source={{ uri: url }}/> : <Text style={[styles.avatarText, styles.imageAvatarText]}>{props.user.name[0]}</Text>}
-            </View>
-          </TouchableWithoutFeedback>
-          <Button onPress={pickImage} style={styles.imageButton} textStyle={styles.imageButtonText} icon={<FeatherIcon name='image' size={22}/>} text={'變更照片'}/>
+          <View style={[styles.avatar, styles.imageAvatar, globalStyles.flexCenter, { backgroundColor: user.color }]}>
+            {url ? <Image style={styles.avatarImage} source={{ uri: url }}/> : <Text style={[styles.avatarText, styles.imageAvatarText]}>{user.name[0]}</Text>}
+          </View>
         </View>
       </TouchableWithoutFeedback>}
     </>
@@ -344,4 +304,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Overview
+export default ProfileBrief

@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, Key
 import React, { useState, useEffect } from 'react'
 import Toolbar from '../../components/Toolbar';
 import { globalStyles } from '../../utils/Constants';
-import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString } from '../../utils/Functions';
+import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString, getDateStringsBetween } from '../../utils/Functions';
 import Button from '../../components/Button';
 import { useHomeState } from '../../context/HomeContext';
 import { useAppState } from '../../context/AppContext';
@@ -15,22 +15,21 @@ const screenWidth = Dimensions.get('window').width;
 const barWidth = screenWidth - 46;
 const buttonWidth = 22;
 
-const CreateActivity = () => {
+const EditActivity = ({ navigation, route }) => {
 
-  const navigation = useNavigation();
-  const props = { ...useAppState(), ...useHomeState() };
+  const props = { ...useAppState(), ...useHomeState(), ...route.params };
+  const activity = props.activity;
 
   const date = props.selectedDate;
-  const now = new Date();
   // date
   const [startDate, setStartDate] = useState(date);
   const [endDate, setEndDate] = useState(date);
   const [picking, setPicking] = useState('');
   // time
-  const [startTime, setStartTime] = useState(`08:00`);
-  const [endTime, setEndTime] = useState('16:00');
+  const [startTime, setStartTime] = useState(activity.startTime);
+  const [endTime, setEndTime] = useState(activity.endTime);
   // description
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(activity.description);
 
   const [start, setStart] = useState(getMinutesFromString(startTime) / 1440);
   const [end, setEnd] = useState(getMinutesFromString(endTime) / 1440);
@@ -68,38 +67,78 @@ const CreateActivity = () => {
     return getDateString(startDate) <= getDateString(endDate) && startTime <= endTime && description.length > 0;
   }
 
+  const isValidDelete = () => {
+    return getDateString(startDate) <= getDateString(endDate);
+  }
+
+  // delete the activity
+  const handleDelete = async () => {
+    if (!isValidDelete()) return;
+    const startDateString = getDateString(startDate);
+    const endDateString = getDateString(endDate);
+    // delete entire activity
+    if (startDateString === activity.startDateString && endDateString === activity.endDateString) {
+      props.setActivities(props.activities.filter(a => a.id !== activity.id));
+      navigation.goBack();
+      navigation.goBack();
+      await axios.delete(`${config.api}/access-item`, {params: {
+        table: 'Laijoig-Activities',
+        id: activity.id
+      }});
+      return;
+    }
+    // set custom details if not delete all
+    let custom = activity.custom;
+    const dates = getDateStringsBetween(startDateString, endDateString);
+    for (const d of dates) {
+      custom[d] = {
+        delete: true,
+      };
+    }
+    const newActivity = {
+      ...activity,
+      custom: custom
+    };
+    props.setActivities(props.activities.map(a => a.id === newActivity.id ? newActivity : a));
+    // back to home page
+    navigation.goBack();
+    await axios.post(`${config.api}/access-item`, {
+      table: 'Laijoig-Activities',
+      data: newActivity
+    });
+  }
+
   // submit the activity
   const handleSubmit = async () => {
     if (!isValid()) return;
     const startDateString = getDateString(startDate);
     const endDateString = getDateString(endDate);
-    const newActivity = {
-      id: getRandomString(12),
-      iso: new Date().toISOString(),
-      startDateString: startDateString,
-      endDateString: endDateString,
+    // set custom details
+    let custom = activity.custom;
+    const dates = getDateStringsBetween(startDateString, endDateString);
+    for (const d of dates) {
+      custom[d] = {
+        iso: new Date().toISOString(),
+        startTime: startTime,
+        endTime: endTime,
+        description: description,
+      };
+    }
+    const newActivity = (startDateString === activity.startDateString && endDateString === activity.endDateString) ? {
+      ...activity,
       startTime: startTime,
       endTime: endTime,
-      userId: props.user.id,
       description: description,
-      groupId: props.group.id,
-      custom: {},
+    } : {
+      ...activity,
+      custom: custom
     };
-    const fm = props.user.activityMonths[0] < startDateString ? props.user.activityMonths[0] : startDateString;
-    const em = props.user.activityMonths[1] > endDateString ? props.user.activityMonths[1] : endDateString;
-    const newUser = { ...props.user, activityMonths: [fm, em] };
-    props.setUser(newUser);
-    props.setActivities([...props.activities, newActivity]);
+    props.setActivities(props.activities.map(a => a.id === newActivity.id ? newActivity : a));
     // back to home page
     navigation.goBack();
-    // store to database
     await axios.post(`${config.api}/access-item`, {
       table: 'Laijoig-Activities',
       data: newActivity
-    });
-    await axios.post(`${config.api}/access-item`, {
-      table: 'Laijoig-Users',
-      data: newUser
     });
   }
 
@@ -109,7 +148,7 @@ const CreateActivity = () => {
         <SafeAreaView style={globalStyles.safeArea}>
           <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
             {/* toolbar */}
-            <Toolbar text={'新增活動'}/>
+            <Toolbar text={'編輯活動'}/>
             <ScrollView style={[styles.body, globalStyles.flex1]}
               onStartShouldSetResponder={() => true}
               onResponderMove={handleMove}
@@ -187,12 +226,15 @@ const CreateActivity = () => {
               </Pressable>
             </ScrollView>
             <View style={styles.buttonContainer}>
-              <Button text='新增' style={[styles.saveButton, isValid() ? {} : styles.saveButtonDisabled]} textStyle={[styles.buttonText, isValid() ? {} : styles.disabledText]} onPress={handleSubmit}/>
+              <Button text='刪除' style={[styles.saveButton, styles.deleteButton, isValidDelete() ? {} : styles.saveButtonDisabled]} textStyle={[styles.buttonText, isValidDelete() ? {} : styles.disabledText]} onPress={handleDelete}/>
+            </View>
+            <View style={styles.buttonContainer}>
+              <Button text='儲存' style={[styles.saveButton, isValid() ? {} : styles.saveButtonDisabled]} textStyle={[styles.buttonText, isValid() ? {} : styles.disabledText]} onPress={handleSubmit}/>
             </View>
           </KeyboardAvoidingView>
         </SafeAreaView>
       </TouchableWithoutFeedback>
-      {picking !== '' && <DatePicker {...pickerProps}/>}
+      {picking !== '' && <DatePicker {...pickerProps} minDate={new Date(activity.startDateString)} maxDate={new Date(activity.endDateString)}/>}
     </>
   )
 }
@@ -299,6 +341,10 @@ const styles = StyleSheet.create({
     ...globalStyles.flexCenter,
     elevation: 2,
   },
+  deleteButton: {
+    right: 130,
+    backgroundColor: globalStyles.colors.red,
+  },
   saveButtonDisabled: {
     backgroundColor: '#fff',
   },
@@ -311,4 +357,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateActivity
+export default EditActivity

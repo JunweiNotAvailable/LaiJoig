@@ -38,6 +38,11 @@ const SignUp = ({ navigation }) => {
     //   id: getRandomString(12),
     //   name: '我的日曆',
     //   members: [props.userId],
+    //   iso: new Date().toISOString(),
+    //   lastSender: '',
+    //   lastMessage: '',
+    //   lastTime: '',
+    //   url: '',
     // };
     let newGroup = (await axios.get(`${config.api}/access-item`, {params: {
       table: 'Laijoig-Groups',
