@@ -15,33 +15,6 @@ const Calendar = ( props ) => {
   
   useEffect(() => {
     setBoard(getMonthBoard(props.month.getFullYear(), props.month.getMonth() + 1));
-    const monthStr = getDateString(props.month).slice(0, 7);
-    // load data
-    async function loadData() {
-      // load activities
-      const activitiesRes = await axios.get(`${config.api}/access-items`, { params: {
-        table: 'Laijoig-Activities',
-        filter: 'dateRange',
-        id: props.group.id,
-        month: monthStr,
-      }});
-      // load comments
-      const commentsRes = await axios.get(`${config.api}/access-items`, { params: {
-        table: 'Laijoig-Comments',
-        filter: 'date',
-        id: props.group.id,
-        month: monthStr
-      }});
-      // update
-      const compatActivities = [ ...props.activities, ...activitiesRes.data ];
-      const compatComments = [ ...props.comments, ...commentsRes.data ];
-      props.setActivities(Array.from(new Set(compatActivities.map(a => a.id))).map(id => compatActivities.find(a => a.id === id)));
-      props.setComments(Array.from(new Set(compatComments.map(t => t.id))).map(id => compatComments.find(t => t.id === id)));
-      props.setLoaded([...props.loaded, monthStr]);
-    }
-    if (!props.loaded.includes(monthStr)) {
-      loadData();
-    }
   }, [props.month]);
 
   return (

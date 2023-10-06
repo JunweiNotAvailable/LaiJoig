@@ -1,7 +1,7 @@
 import { View, Image, Text, StyleSheet, ScrollView, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { globalStyles, weekDays } from '../utils/Constants';
-import { getDateString } from '../utils/Functions';
+import { getDateString, useInterval } from '../utils/Functions';
 import Button from './Button';
 import { useNavigation } from '@react-navigation/native';
 import Activitiy from './Activitiy';
@@ -11,6 +11,18 @@ const ActivityList = ( props ) => {
 
   const selectedDateString = getDateString(props.selectedDate);
   const [activities, setActivities] = useState([]); 
+
+  const [noTasksImage, setNoTasksImage] = useState(require('../../assets/images/no-tasks.png'));
+  const [noTasksCount, setNoTasksCount] = useState(0);
+
+  useInterval(() => {
+    if (noTasksCount === 3) {
+      setNoTasksImage(require('../../assets/images/no-tasks-wink.png'))
+    } else if (noTasksCount === 4) {
+      setNoTasksImage(require('../../assets/images/no-tasks.png'))
+    }
+    setNoTasksCount(noTasksCount > 4 ? 0 : noTasksCount + 1);
+  }, 700);
 
   useEffect(() => {
     setActivities(props.activities.filter(a => a.startDateString <= selectedDateString && a.endDateString >= selectedDateString)
@@ -39,6 +51,14 @@ const ActivityList = ( props ) => {
         <ActivityIndicator/>
       </View>
       :
+      activities.length === 0 ? 
+      <View style={[globalStyles.flexCenter, globalStyles.flex1]}>
+        <View style={styles.noTasksImageContainer}>
+          <Image source={noTasksImage} style={styles.noTasksImage}/>
+        </View>
+        <Text style={styles.noTasksText}>沒有活動</Text>
+      </View>
+      :
       <ScrollView>
         <Pressable>
           {activities.map((activity, i) => {
@@ -58,7 +78,7 @@ const ActivityList = ( props ) => {
                 <TouchableWithoutFeedback onPress={() => navigation.navigate('Comments', { activity: activity })}>
                   <View style={[styles.lastComment, globalStyles.flexRow, globalStyles.alignItems.center]}>
                     <View style={[styles.avatar, globalStyles.flexCenter, { backgroundColor: lastCommentUser.color }]}>
-                      {url ? <Image source={{ uri: url }} style={styles.avatarImage} />: <Text style={styles.avatarText}>{lastCommentUser.name[0]}</Text>}
+                      {url ? <Image source={{ uri: url }} style={styles.avatarImage} />: <Text style={styles.avatarTextSmall}>{lastCommentUser.name[0]}</Text>}
                     </View>
                     <Text style={styles.username}>{lastCommentUser.name}</Text>
                     <Text style={[styles.lastMessage, globalStyles.flex1]} ellipsizeMode='tail' numberOfLines={1}>{lastComment.message}</Text>
@@ -115,6 +135,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 12,
   },
+  avatarTextSmall: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 9,
+  },
   username: {
     marginLeft: 6,
     fontWeight: 'bold',
@@ -125,6 +150,20 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     fontSize: 13,
   },
+  noTasksImageContainer: {
+    width: '20%',
+    aspectRatio: '1/1',
+  },
+  noTasksImage: {
+    width: '100%',
+    height: '100%',
+  },
+  noTasksText: {
+    marginTop: 4,
+    color: '#ccc',
+    fontSize: 13,
+    fontWeight: 'bold'
+  }
 });
 
 export default ActivityList

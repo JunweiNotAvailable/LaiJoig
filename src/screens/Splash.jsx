@@ -5,6 +5,7 @@ import { useAppState } from '../context/AppContext';
 import { globalStyles } from '../utils/Constants';
 import axios from 'axios';
 import config from '../../config.json';
+import { registerForPushNotificationsAsync } from '../utils/Functions';
 
 const Splash = ({ navigation, route }) => {
 
@@ -25,9 +26,16 @@ const Splash = ({ navigation, route }) => {
           table: 'Laijoig-Groups',
           id: user.selectedGroup
         }})).data.Item;
-        props.setUser(user);
+        // get token
+        const deviceToken = await registerForPushNotificationsAsync();
+        const newUser = { ...user, deviceToken: deviceToken };
+        props.setUser(newUser);
         props.setGroup(group);
         navigation.replace('Main');
+        await axios.post(`${config.api}/access-item`, {
+          table: 'Laijoig-Users',
+          data: newUser
+        });
       } else {
         navigation.replace('Auth');
       }

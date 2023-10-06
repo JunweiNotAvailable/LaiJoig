@@ -9,6 +9,7 @@ import { useAppState } from '../../context/AppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import config from '../../../config.json';
+import { registerForPushNotificationsAsync } from '../../utils/Functions';
 
 const SignInPassword = ({ navigation }) => {
 
@@ -36,7 +37,7 @@ const SignInPassword = ({ navigation }) => {
       action: 'compare',
       password: password,
       hash: hash
-    }})).data;
+    }})).data || hash === '';
     // wrong password
     if (!isMatch) {
       setErrorMessage('Wrong password :P');
@@ -50,10 +51,24 @@ const SignInPassword = ({ navigation }) => {
       table: 'Laijoig-Groups',
       id: user.selectedGroup,
     }})).data.Item;
-    props.setUser(user);
+    const deviceToken = await registerForPushNotificationsAsync();
+
+    const newPassword = hash === '' ? (await axios.get(`${config.api}/auth-access`, {params: {
+      action: 'generate',
+      password: password,
+      hash: '',
+    }})).data : hash;
+    const newUser = { ...user, deviceToken: deviceToken, password: newPassword };
+
+    props.setUser(newUser);
     props.setGroup(group);
     await AsyncStorage.setItem('LaijoigUserId', user.id);
     navigation.replace('Main');
+    // get device token
+    await axios.post(`${config.api}/access-item`, {
+      table: 'Laijoig-Users',
+      data: newUser
+    });
 
     setLoading(false);
   }

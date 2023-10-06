@@ -22,7 +22,12 @@ const Overview = ({ navigation, route }) => {
   const [comments, setComments] = useState([]);
   const [showingImage, setShowingImage] = useState(false);
   const [url, setUrl] = useState(props.urls[props.user.id]);
+
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setUrl(props.urls[props.user.id]);
+  }, [props.urls]);
 
   useEffect(() => {
     (async () => {

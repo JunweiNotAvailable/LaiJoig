@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, Image, StyleSheet } from 'react-native'
 import { useFonts } from 'expo-font';
 import React, { useState, useEffect } from 'react';
 import Calendar from '../../components/Calendar';
@@ -8,13 +8,14 @@ import { useAppState } from '../../context/AppContext';
 import axios from 'axios';
 import config from '../../../config.json';
 import { getDateString } from '../../utils/Functions';
+import { globalStyles } from '../../utils/Constants';
 
 const HomeCalendar = ({ navigation, route }) => {
   let [fontsLoaded] = useFonts({
     'Logo': require('../../../assets/fonts/OnelySans.ttf')
   });
 
-  const props = { ...useAppState(), ...useHomeState() };
+  const props = { ...useAppState(), ...useHomeState(), ...route.params };
   // state
   const [loading, setLoading] = useState(true);
 
@@ -46,11 +47,17 @@ const HomeCalendar = ({ navigation, route }) => {
     if (route?.params?.date) {
       props.setSelectedDate(route.params.date);
     }
+    if (route?.params?.toActivity) {
+      navigation.navigate('Comments', { activity: route.params.toActivity });
+    }
   }, [route]);
 
   return (
     <View style={styles.container}>
-      <View style={styles.logobar}>
+      <View style={[styles.logobar, globalStyles.flexRow]}>
+        <View style={styles.logoImageContainer}>
+          <Image style={styles.logoImage} source={require('../../../assets/images/logo.png')}/>
+        </View>
         <Text style={{ ...styles.logoText, fontFamily: fontsLoaded ? 'Logo' : '' }}>Laijoig</Text>
       </View>
       <View style={styles.shadowContainer}>
@@ -73,9 +80,20 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 80,
     marginLeft: 16,
-    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+  },
+  logoImageContainer: {
+    height: 28,
+    aspectRatio: '1/1',
+    marginBottom: 16,
+    marginRight: 8,
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
   },
   logoText: {
+    color: globalStyles.colors.primary,
     fontSize: 24,
     marginBottom: 16,
   },

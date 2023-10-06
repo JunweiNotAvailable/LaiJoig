@@ -10,7 +10,7 @@ import FeatherIcon from 'react-native-vector-icons/Feather';
 import axios from 'axios';
 import config from '../../config.json';
 import Toolbar from '../components/Toolbar';
-import { getAllMonthsBetween, getDateStringsBetween, getDateString } from '../utils/Functions';
+import { getAllMonthsBetween, getDateStringsBetween, getTimeString, getDateString } from '../utils/Functions';
 import Activitiy from '../components/Activitiy';
 
 const ProfileBrief = ({ navigation, route }) => {
@@ -25,6 +25,10 @@ const ProfileBrief = ({ navigation, route }) => {
   const [url, setUrl] = useState(props.urls[user.id]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    setUrl(props.urls[user.id]);
+  }, [props.urls]);
+  
   useEffect(() => {
     (async () => {
       const nowString = getDateString(new Date()).slice(0, 7);

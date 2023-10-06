@@ -21,10 +21,22 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.junweialreadyexist.LaiJoig"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0f7f907e-9747-4ff0-91a8-06b702b0e8b0"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0f7f907e-9747-4ff0-91a8-06b702b0e8b0"
     }
   }
 }

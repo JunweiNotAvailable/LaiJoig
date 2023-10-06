@@ -36,7 +36,7 @@ const EditActivity = ({ navigation, route }) => {
   const [sliding, setSliding] = useState('');
 
   const pickerProps = { startDate, setStartDate, endDate, setEndDate, picking, setPicking };
-
+  
   useEffect(() => {
     if (getDateString(startDate) > getDateString(endDate)) {
       setEndDate(startDate);
@@ -101,6 +101,7 @@ const EditActivity = ({ navigation, route }) => {
     };
     props.setActivities(props.activities.map(a => a.id === newActivity.id ? newActivity : a));
     // back to home page
+    navigation.goBack();
     navigation.goBack();
     await axios.post(`${config.api}/access-item`, {
       table: 'Laijoig-Activities',
@@ -258,9 +259,7 @@ const styles = StyleSheet.create({
   pickerButton: {
     borderRadius: 10,
     padding: 8,
-    paddingHorizontal: 16,
     backgroundColor: '#f3f3f3',
-    flex: 1,
     flex: 1,
   },
   pickerButtonFocused: {

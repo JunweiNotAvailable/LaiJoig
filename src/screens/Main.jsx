@@ -15,6 +15,7 @@ import Settings from "./Profile/Settings";
 import axios from "axios";
 import config from '../../config.json';
 import ProfileSettings from "./Profile/ProfileSettings";
+import NotificationsScreen from "./Profile/Notifications";
 import Account from "./Profile/Account";
 import Preference from "./Profile/Preference";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
@@ -23,6 +24,7 @@ import EditActivity from "./Home/EditActivity";
 import { ChatStateProvider } from "../context/ChatContext";
 import GroupsList from "./Chat/GroupsList";
 import ChatRoom from "./Chat/ChatRoom";
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -65,7 +67,12 @@ const Search = () => {
 // notifications screen
 const Notifications = () => {
   return (
-    <></>
+    <HomeStateProvider>
+      <Stack.Navigator initialRouteName="NotificationsScreen" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="NotificationsScreen" component={NotificationsScreen}/>
+        <Stack.Screen name="Comments" component={Comments} />
+      </Stack.Navigator>
+    </HomeStateProvider>
   )
 }
 
@@ -123,6 +130,12 @@ const Main = ({ navigation, route }) => {
     }
   }, [props.user]);
 
+  useEffect(() => {
+    if (props.goToNotifications) {
+      navigation.navigate('Notifications');
+    }
+  }, [props.goToNotifications]);
+
   const toSplash = () => {
     navigation.replace('Splash');
   }
@@ -140,32 +153,34 @@ const Main = ({ navigation, route }) => {
       <Tab.Screen name="Home" component={Home}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Entypo name="home" size={24} color={focused ? globalStyles.colors.primary : '#000'} />
+            <Icon name="calendar-text" size={26} color={focused ? globalStyles.colors.primary : '#000'} />
           ),
         }}
       />
       {/* chat */}
-      <Tab.Screen name="Chat" component={Chat} options={{
+      {/* <Tab.Screen name="Chat" component={Chat} options={{
         tabBarIcon: ({ focused }) => (
           <View style={styles.iconStyle}>
             <Image source={focused ? urls.chatSelected : urls.chat} style={styles.imageStyle} />
           </View>
         ),
-      }} />
-      {/* search */}
-      {/* <Tab.Screen name="Search" component={Search} options={{
-        tabBarIcon: ({ focused }) => (
-          <Entypo name="magnifying-glass" size={24} color={focused ? globalStyles.colors.primary : '#000'} />
-        ),
       }} /> */}
-      {/* notifications */}
+      {/* notifications (v2. Posts) */}
       <Tab.Screen name="Notifications" component={Notifications} options={{
         tabBarIcon: ({ focused }) => (
           <View style={styles.iconStyle}>
             <Image source={focused ? urls.bellSelected : urls.bell} style={styles.imageStyle} />
           </View>
         ),
-      }} />
+      }} listeners={({ navigation, route }) => ({
+        tabPress: () => props.setTrigger(!props.trigger)
+      })} />
+      {/* search */}
+      {/* <Tab.Screen name="Search" component={Search} options={{
+        tabBarIcon: ({ focused }) => (
+          <Entypo name="magnifying-glass" size={24} color={focused ? globalStyles.colors.primary : '#000'} />
+        ),
+      }} /> */}
       {/* profile */}
       <Tab.Screen name="Profile" component={Profile} initialParams={{ toSplash: toSplash }} options={{
         tabBarIcon: ({ focused }) => (
@@ -184,7 +199,9 @@ const Main = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   iconStyle: {
     width: '48%',
-    height: '48%'
+    height: '48%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   imageStyle: {
     height: '100%',

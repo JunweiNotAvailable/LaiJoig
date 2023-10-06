@@ -216,9 +216,7 @@ const styles = StyleSheet.create({
   pickerButton: {
     borderRadius: 10,
     padding: 8,
-    paddingHorizontal: 16,
     backgroundColor: '#f3f3f3',
-    flex: 1,
     flex: 1,
   },
   pickerButtonFocused: {

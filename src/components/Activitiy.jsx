@@ -1,5 +1,5 @@
 import { View, Image, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { globalStyles, weekDays } from '../utils/Constants';
 import { getDateString, getTimeFromNow, to12HourFormat } from '../utils/Functions';
 import { useNavigation } from '@react-navigation/native';
@@ -10,9 +10,13 @@ const Activitiy = ( props ) => {
   const navigation = useNavigation();
   const activity = props.activity;
   const activityUser = props.users.filter(u => u.id === activity.userId)[0];
-  const url = props.urls[activity.userId];
+  const [url, setUrl] = useState(props.urls[activity.userId]);
   const custom = activity.custom[selectedDateString];
   const commentCounts = props.comments.filter(c => c.activityId === activity.id && selectedDateString === c.dateString).length;
+
+  useEffect(() => {
+    setUrl(props.urls[activityUser.id]);
+  }, [props.urls]);
 
   const handleClick = (to) => {
     if (to === 'comments') {
@@ -27,6 +31,7 @@ const Activitiy = ( props ) => {
   }
 
   return (
+    activity &&
     <TouchableWithoutFeedback onPress={() => handleClick('comments')}>
       <View style={[styles.container, { borderLeftColor: activityUser.color }]}>
         {/* top row */}
@@ -38,14 +43,14 @@ const Activitiy = ( props ) => {
                 {url ? <Image source={{ uri: url }} style={styles.avatarImage} /> : <Text style={styles.avatarText}>{activityUser.name[0]}</Text>}
               </View>
               <Text ellipsizeMode='tail' numberOfLines={1} style={[styles.username]}>{activityUser.name}</Text>
-              <Text style={[styles.timeFromNow, globalStyles.flex1]} numberOfLines={1}>{getTimeFromNow(custom ? custom.iso : activity.iso)}</Text>
+              <Text style={[styles.timeFromNow, globalStyles.flex1]} numberOfLines={1}>{getTimeFromNow(custom?.iso ? custom.iso : activity.iso)}</Text>
             </View>
           </TouchableWithoutFeedback>}
-          <Text style={styles.time}>{to12HourFormat(custom ? custom.startTime : activity.startTime)} - {to12HourFormat(custom ? custom.endTime : activity.endTime)}</Text>
+          <Text style={styles.time}>{to12HourFormat(custom?.startTime ? custom.startTime : activity.startTime)} - {to12HourFormat(custom?.endTime ? custom.endTime : activity.endTime)}</Text>
         </View>
         {/* bottom row */}
         <View style={[globalStyles.flexRow, globalStyles.alignItems.flexEnd, styles.bottomRow]}>
-          <Text style={[styles.description, globalStyles.flex1]}>{custom ? custom.description : activity.description}</Text>
+          <Text style={[styles.description, globalStyles.flex1]}>{custom?.description ? custom.description : activity.description}</Text>
           <Text style={styles.commentButton}>{`${commentCounts}則留言`}</Text>
         </View>
       </View>
@@ -79,6 +84,7 @@ const styles = StyleSheet.create({
   avatarText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 11,
   },
   username: {
     marginLeft: 6,

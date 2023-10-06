@@ -5,7 +5,7 @@ import { useAppState } from '../context/AppContext';
 import { globalStyles, weekDays } from '../utils/Constants';
 import Toolbar from '../components/Toolbar';
 import Activitiy from '../components/Activitiy';
-import { getDateString, getTimeFromNow, getRandomString } from '../utils/Functions';
+import { getDateString, getTimeFromNow, getRandomString, sendPushNotification } from '../utils/Functions';
 import Button from '../components/Button';
 import axios from 'axios';
 import config from '../../config.json';
@@ -21,6 +21,17 @@ const Comments = ({ navigation, route }) => {
 
   const [message, setMessage] = useState('');
 
+  const [tagging, setTagging] = useState(false);
+  const [taggingUsers, setTaggingUsers] = useState([]);
+
+  // go to comments after clicked notification
+  useEffect(() => {
+    if (props.commentActivity) {
+      navigation.navigate('HomeCalendar');
+      navigation.navigate('Comments', { activity: props.commentActivity });
+    }
+  }, [props.commentActivity]);
+
   useEffect(() => {
     setComments(props.comments.filter(c => c.activityId === activity.id && selectedDateString === c.dateString).sort((a, b) => a.iso < b.iso ? -1 : 1));
   }, [props.comments]);
@@ -28,6 +39,14 @@ const Comments = ({ navigation, route }) => {
   // when click on the avatar
   const handleClick = (user) => {
     navigation.navigate('ProfileBrief', { briefUser: user });
+  }
+
+  // handle input change
+  const handleTextChange = (text) => {
+    setMessage(text);
+    if (text[text.length - 1] === '@') {
+      setTagging(true);
+    }
   }
 
   // send the message
@@ -42,6 +61,17 @@ const Comments = ({ navigation, route }) => {
       activityId: activity.id,
       groupId: props.group.id,
     };
+    const activityUser = props.users.find(u => u.id === activity.userId);
+    const notification = {
+      id: activity.id + '_' + selectedDateString,
+      iso: new Date().toISOString(),
+      commentId: newComment.id,
+      title: `${props.user.name}回復了${activityUser.name}的活動`,
+      sender: props.user.id,
+      message: message,
+      groupId: props.group.id,
+      read: [props.user.id],
+    };
     props.setComments([...props.comments, newComment]);
     setMessage('');
     // save to database
@@ -49,6 +79,24 @@ const Comments = ({ navigation, route }) => {
       table: 'Laijoig-Comments',
       data: newComment
     });
+    await axios.post(`${config.api}/access-item`, {
+      table: 'Laijoig-Notifications',
+      data: notification
+    });
+    
+    // push notifications to all users
+    for (const u of props.users) {
+      if (u.id === props.user.id) continue;
+      await sendPushNotification(
+        u.deviceToken,
+        `${props.user.name}回復了${activityUser.name}的活動`,
+        message,
+        { 
+          commentId: newComment.id,
+          date: selectedDateString,
+        }
+      );
+    }
   }
 
   return (
@@ -97,7 +145,7 @@ const Comments = ({ navigation, route }) => {
               </View>
               {/* input */}
               <View style={[globalStyles.flexRow]}>
-                <TextInput placeholder='訊息...' multiline style={[globalStyles.flex1, styles.input]} value={message} onChangeText={text => setMessage(text)}/>
+                <TextInput onBlur={() => setTagging(false)} placeholder='訊息...' multiline style={[globalStyles.flex1, styles.input]} value={message} onChangeText={text => handleTextChange(text)}/>
                 <Button
                   style={[globalStyles.flexCenter, styles.sendButton]}
                   textStyle={styles.sendButtonText}
@@ -154,6 +202,7 @@ const styles = StyleSheet.create({
   avatarText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 11,
   },
   username: {
     marginLeft: 6,

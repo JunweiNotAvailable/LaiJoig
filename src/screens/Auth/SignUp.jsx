@@ -9,7 +9,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
 import config from '../../../config.json';
 import { Entypo } from '@expo/vector-icons';
-import { getDateString, getRandomHexColor, getRandomString } from '../../utils/Functions';
+import { getDateString, getRandomHexColor, getRandomString, registerForPushNotificationsAsync } from '../../utils/Functions';
 
 const SignUp = ({ navigation }) => {
 
@@ -57,6 +57,7 @@ const SignUp = ({ navigation }) => {
     }})).data;
     // user
     const dateString = getDateString(new Date());
+    const deviceToken = await registerForPushNotificationsAsync();
     const newUser = {
       id: props.userId,
       name: username,
@@ -68,7 +69,7 @@ const SignUp = ({ navigation }) => {
       aboutMe: '',
       bosom: [],
       activityMonths: [dateString, dateString],
-      deviceToken: '',
+      deviceToken: deviceToken,
       groups: [newGroup.id],
       selectedGroup: newGroup.id,
     };

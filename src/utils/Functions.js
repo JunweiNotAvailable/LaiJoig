@@ -1,5 +1,8 @@
 import axios from "axios";
 import config from '../../config.json';
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+import { useEffect, useRef } from 'react';
 
 // get month board by given year and month
 export const getMonthBoard = (year, month) => {
@@ -235,9 +238,77 @@ export const uploadImage = async (bucketName, imageName, url) => {
 };
 
 // get image from s3
-// get image from s3
 export const getImageUrl = async (bucketName, filename) => {
   if (!filename) return '';
-  const response = await axios.get(`${config.s3}/access-image?bucketName=${bucketName}&fileName=${filename}`);
-  return 'data:image/jpeg;base64,' + response.data;
+  try {
+    const response = await axios.get(`${config.s3}/access-image?bucketName=${bucketName}&fileName=${filename}`);
+    return 'data:image/jpeg;base64,' + response.data;
+  } catch (error) {
+    return '';
+  }
+}
+
+
+// request permission and get token
+export const registerForPushNotificationsAsync = async () => {
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+
+  // If permissions have not been determined, ask the user for permission
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+
+  // If permission is granted, get the device token
+  if (finalStatus === 'granted') {
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId: '0f7f907e-9747-4ff0-91a8-06b702b0e8b0' })).data;
+    return token;
+  } else {
+    // Handle the case where the user has not granted permission
+    return null;
+  }
+}
+
+// send push notification
+export const sendPushNotification = async (expoPushToken, title, body, data) => {
+  const message = {
+    to: expoPushToken,
+    sound: 'default',
+    title: title,
+    body: body,
+    data: data || {},
+  };
+
+  await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(message),
+  });
+}
+
+// use interval
+export function useInterval(callback, delay) {
+  const savedCallback = useRef(callback)
+
+  // Remember the latest callback if it changes.
+  useEffect(() => {
+    savedCallback.current = callback
+  }, [callback])
+
+  // Set up the interval.
+  useEffect(() => {
+    // Don't schedule if no delay is specified.
+    if (delay === null) {
+      return
+    }
+
+    const id = setInterval(() => savedCallback.current(), delay)
+
+    return () => clearInterval(id)
+  }, [delay])
 }

@@ -16,7 +16,7 @@ const SignInUsername = ({ navigation }) => {
 
   // check if user id is valid
   const isValid = () => {
-    return userId.length > 0 && /^[a-zA-Z0-9_]+$/.test(userId);
+    return userId.length > 0 && /^[.a-zA-Z0-9_]+$/.test(userId);
   }
   // check if user exists
   const handleSubmit = async () => {

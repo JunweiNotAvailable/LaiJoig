@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, TouchableNativeFeedback, Keyboard, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Pressable, TextInput } from 'react-native'
-import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Pressable, TextInput } from 'react-native'
+import React, { useEffect, useState } from 'react';
 import { useAppState } from '../../context/AppContext';
 import { useChatState } from '../../context/ChatContext';
 import { globalStyles } from '../../utils/Constants';
@@ -7,33 +7,52 @@ import Toolbar from '../../components/Toolbar';
 import Button from '../../components/Button';
 import { Entypo } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { firestore } from '../../utils/firebase';
+import { addDoc, query, getDocs, collection, where, orderBy, limit } from 'firebase/firestore';
 
 const ChatRoom = ({ navigation, route }) => {
 
   const props = { ...useAppState(), ...useChatState(), ...route.params };
   const group = props.group;
   const url = props.url;
-
   const [message, setMessage] = useState('');
 
-  const handleSubmit = async () => {
+  // get messages from firestore
+  useEffect(() => {
+    const doc = query(collection(firestore, group.id), orderBy("iso"), limit(25));
+    
+  }, []);
 
+  const handleSubmit = async () => {
+    if (message.trim().length === 0) return;
+    const newMessage = {
+      sender: props.user.id,
+      message: message.trim(),
+      iso: new Date().toISOString(),
+      status: 'unread',
+    };
+
+    setMessage('');
   }
 
   return (
-    <TouchableNativeFeedback onPress={Keyboard.dismiss}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={globalStyles.safeArea}>
         <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
           {/* tool bar */}
           <View style={[styles.toolbar, globalStyles.alignItems.center, globalStyles.flexRow, globalStyles.justifyContent.spaceBetween]}>
             <View style={[globalStyles.flex1, globalStyles.alignItems.center, globalStyles.flexRow]}>
               <Button icon={<Entypo name='chevron-left' size={28} style={styles.backButtonStyle} onPress={() => navigation.goBack()}/>}/>
-              <View style={styles.groupAvatar}>
-                {url && <Image source={{ uri: url }} style={styles.groupImage}/>}
-              </View>
-              <Text style={[styles.groupName, globalStyles.flex1]} numberOfLines={1}>{group.name}</Text>
+              <TouchableWithoutFeedback>
+                <View style={[globalStyles.flexRow, globalStyles.flex1, globalStyles.alignItems.center]}>
+                  <View style={styles.groupAvatar}>
+                    {url && <Image source={{ uri: url }} style={styles.groupImage}/>}
+                  </View>
+                  <Text style={[styles.groupName, globalStyles.flex1]} numberOfLines={1}>{group.name}</Text>
+                </View>
+              </TouchableWithoutFeedback>
             </View>
-            <Button icon={<Icon name='ellipsis-vertical' style={styles.menuIcon}/>} onPress={() => {}}/>
+            {/* <Button icon={<Icon name='ellipsis-vertical' style={styles.menuIcon}/>} onPress={() => {}}/> */}
           </View>
           {/* messages */}
           <ScrollView style={styles.messagesList}>
@@ -53,7 +72,7 @@ const ChatRoom = ({ navigation, route }) => {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </TouchableNativeFeedback>
+    </TouchableWithoutFeedback>
   )
 }
 
