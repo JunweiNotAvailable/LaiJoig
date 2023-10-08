@@ -34,7 +34,7 @@ const GroupsList = ({ navigation, route }) => {
           <Pressable>
             {groups.map((group, i) => {
               return (
-                <TouchableWithoutFeedback key={group.id} onPress={() => navigation.navigate('ChatRoom', { group: group, url: urls[group.id] })}>
+                <TouchableWithoutFeedback key={group.id} onPress={() => navigation.navigate('ChatRoom', { room: group, url: urls[group.id] })}>
                   <View style={styles.group}>
                     <View style={styles.groupAvatar}>
                       {group.url && <Image source={{ uri: urls[group.id] }} style={styles.image}/>}

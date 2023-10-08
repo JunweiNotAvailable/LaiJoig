@@ -83,10 +83,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   logoImageContainer: {
-    height: 28,
+    height: 26,
     aspectRatio: '1/1',
     marginBottom: 16,
-    marginRight: 8,
+    marginRight: 12,
   },
   logoImage: {
     width: '100%',

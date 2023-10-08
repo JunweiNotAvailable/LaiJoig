@@ -1,4 +1,4 @@
-import { SafeAreaView, Pressable, ActivityIndicator, TouchableWithoutFeedback, Image, Keyboard, View, Text, StyleSheet, ScrollView } from 'react-native'
+import { SafeAreaView, TouchableWithoutFeedback, Image, Keyboard, View, Text, StyleSheet, ScrollView } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react';
 import { globalStyles, urls } from '../../utils/Constants';
 import { useAppState } from '../../context/AppContext';
@@ -12,6 +12,7 @@ import { getAllMonthsBetween, getDateString, getDateStringsBetween, getTimeStrin
 import axios from 'axios';
 import config from '../../../config.json';
 import Activitiy from '../../components/Activitiy';
+import Loading from '../../components/Loading';
 
 const Overview = ({ navigation, route }) => {
 
@@ -177,7 +178,7 @@ const Overview = ({ navigation, route }) => {
                 <Text style={styles.emptyText}>沒有朋友</Text>
               </View>
             : showingInfo === 'schedule' ?
-              activities.length > 0 ? <ScrollView style={[globalStyles.flex1, styles.activitiesList]}>
+              splitedActivities.length > 0 ? <ScrollView style={[globalStyles.flex1, styles.activitiesList]}>
                 {splitedActivities.map((activity, i) => {
                   const activityProps = {
                     selectedDate: new Date(activity.startDateString),
@@ -198,7 +199,7 @@ const Overview = ({ navigation, route }) => {
               : 
               // empty
               <View style={[styles.empty, globalStyles.flexCenter]}>
-                {loading ? <ActivityIndicator size={18}/> : <Text style={styles.emptyText}>沒有行程</Text>}
+                {loading ? <Loading/> : <Text style={styles.emptyText}>沒有行程</Text>}
               </View>
             : <></>}
           </View>

@@ -1,7 +1,4 @@
 import React, { useEffect, createContext, useContext, useState } from 'react';
-import { getImageUrl } from '../utils/Functions';
-import axios from 'axios';
-import config from '../../config.json';
 
 // Create a context
 const ChatStateContext = createContext();
@@ -9,9 +6,11 @@ const ChatStateContext = createContext();
 // Create a provider component
 export const ChatStateProvider = ({ children }) => {
 
+  const [messages, setMessages] = useState([]);
+
   return (
     <ChatStateContext.Provider value={{ 
-      
+      messages, setMessages,
     }}>
       {children}
     </ChatStateContext.Provider>

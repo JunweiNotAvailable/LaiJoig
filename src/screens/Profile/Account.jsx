@@ -1,4 +1,4 @@
-import { View, TextInput, Text, ScrollView, Pressable, StyleSheet, TouchableWithoutFeedback, SafeAreaView, KeyboardAvoidingView, Keyboard, Platform, ActivityIndicator } from 'react-native'
+import { View, TextInput, Text, ScrollView, Pressable, StyleSheet, TouchableWithoutFeedback, SafeAreaView, KeyboardAvoidingView, Keyboard, Platform } from 'react-native'
 import React, { useState, useEffect } from 'react';
 import { globalStyles } from '../../utils/Constants';
 import Toolbar from '../../components/Toolbar';
@@ -7,6 +7,7 @@ import { useProfileState } from '../../context/ProfileContext';
 import Button from '../../components/Button';
 import axios from 'axios';
 import config from '../../../config.json';
+import Loading from '../../components/Loading';
 
 const Account = () => {
 
@@ -109,7 +110,7 @@ const Account = () => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={[styles.container, globalStyles.safeArea]}>
           <KeyboardAvoidingView style={[globalStyles.flex1]} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
-            <Toolbar text='設定'/>
+            <Toolbar text='帳號'/>
             <ScrollView style={[globalStyles.flex1]}>
               <Pressable>
                 {/* <View style={[styles.inputGroup, globalStyles.flexRow, globalStyles.alignItems.center]}>
@@ -148,7 +149,7 @@ const Account = () => {
                 <TextInput secureTextEntry style={[styles.input, focusing === 'newPasswordConfirm' ? styles.focus : {}]} onBlur={() => setFocusing('')} onFocus={() => setFocusing('newPasswordConfirm')} placeholder='密碼確認' value={newPasswordConfirm} onChangeText={text => setNewPasswordConfirm(text)} numberOfLines={1}/>
               </View>
               <View style={[globalStyles.alignItems.flexEnd, styles.buttonContainer]}>
-                <Button onPress={changePassword} icon={loadingPassword ? <ActivityIndicator size={17} color={'#fff'}/> : <Text style={styles.buttonText}>變更密碼</Text>} style={[styles.saveButton, { width: 92 }, validPasswords() ? {} : { backgroundColor: '#ddd' }]}/>
+                <Button onPress={changePassword} icon={loadingPassword ? <Loading size={17} color={'#fff'}/> : <Text style={styles.buttonText}>變更密碼</Text>} style={[styles.saveButton, { width: 92 }, validPasswords() ? {} : { backgroundColor: '#ddd' }]}/>
               </View>
             </View>
           </TouchableWithoutFeedback>

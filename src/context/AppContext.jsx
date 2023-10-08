@@ -3,6 +3,7 @@ import { getImageUrl } from '../utils/Functions';
 import axios from 'axios';
 import config from '../../config.json';
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Create a context
 const AppStateContext = createContext();
@@ -18,10 +19,10 @@ export const AppStateProvider = ({ children }) => {
   //     }})).data;
   //     console.log(data);
   //     for (const a of data) {
-  //       if (a.userId === '友誼') {
+  //       if (a.userId === '張涵柔') {
   //         const na = {
   //           ...a,
-  //           userId: 'Uz.zzi_',
+  //           userId: 'hzzzzz._.',
   //         }
   //         await axios.post(`${config.api}/access-item`, {
   //           table: 'Laijoig-Activities',
@@ -39,6 +40,7 @@ export const AppStateProvider = ({ children }) => {
   const [groups, setGroups] = useState([]);
   const [group, setGroup] = useState(null);
   const [urls, setUrls] = useState({});
+  const [preference, setPreference] = useState({});
   const [notifications, setNotifications] = useState([]);
   // notification data
   const [receivedComment, setReceivedComment] = useState(null);
@@ -51,24 +53,34 @@ export const AppStateProvider = ({ children }) => {
   useEffect(() => {
 
     notificationListener.current = Notifications.addNotificationReceivedListener(async notification => {
-      // load comment from database when recieved notification
+      // load data from database when recieved notification
       const commentId = notification.request.content.data.commentId;
-      const comment = (await axios.get(`${config.api}/access-item`, {params: {
-        table: 'Laijoig-Comments',
-        id: commentId
-      }})).data.Item;
-      setReceivedComment(comment);
+      const messageId = notification.request.content.data.messageId;
+      if (commentId) { // if it's comment
+        const comment = (await axios.get(`${config.api}/access-item`, {params: {
+          table: 'Laijoig-Comments',
+          id: commentId
+        }})).data.Item;
+        setReceivedComment(comment);
+      } else if (messageId) { // if it's message
+
+      }
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(async response => {
-      // load comment from database when recieved notification
+      // load data from database when recieved notification
       const commentId = response.notification.request.content.data.commentId;
-      const comment = (await axios.get(`${config.api}/access-item`, {params: {
-        table: 'Laijoig-Comments',
-        id: commentId
-      }})).data.Item;
-      setReceivedComment(comment);
-      setGoToNotifications(response.notification.request.identifier);
+      const messageId = response.notification.request.content.data.messageId;
+      if (commentId) { // if it's comment
+        const comment = (await axios.get(`${config.api}/access-item`, {params: {
+          table: 'Laijoig-Comments',
+          id: commentId
+        }})).data.Item;
+        setReceivedComment(comment);
+        setGoToNotifications(response.notification.request.identifier);
+      } else if (messageId) { // if it's message
+        
+      }
     });
 
     return () => {
@@ -80,6 +92,12 @@ export const AppStateProvider = ({ children }) => {
   // load data
   useEffect(() => {
     (async () => {
+      // preference
+      setPreference({
+        loadingIcon: await AsyncStorage.getItem('loadingIcon') || 'normal',
+        chatTheme: await AsyncStorage.getItem('chatTheme') || 'normal',
+      });
+      // notificaitons
       const data = (await axios.get(`${config.api}/access-items`, {params: {
         table: 'Laijoig-Notifications',
         filter: ''
@@ -130,6 +148,7 @@ export const AppStateProvider = ({ children }) => {
       group, setGroup,
       groups, setGroups,
       urls, setUrls,
+      preference, setPreference,
       receivedComment, setReceivedComment,
       goToNotifications, setGoToNotifications,
       notifications, setNotifications,

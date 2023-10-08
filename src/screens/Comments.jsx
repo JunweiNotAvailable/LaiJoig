@@ -21,8 +21,7 @@ const Comments = ({ navigation, route }) => {
 
   const [message, setMessage] = useState('');
 
-  const [tagging, setTagging] = useState(false);
-  const [taggingUsers, setTaggingUsers] = useState([]);
+  const [taggingUsers, setTaggingUsers] = useState([]);;
 
   // go to comments after clicked notification
   useEffect(() => {
@@ -36,16 +35,40 @@ const Comments = ({ navigation, route }) => {
     setComments(props.comments.filter(c => c.activityId === activity.id && selectedDateString === c.dateString).sort((a, b) => a.iso < b.iso ? -1 : 1));
   }, [props.comments]);
 
-  // when click on the avatar
-  const handleClick = (user) => {
-    navigation.navigate('ProfileBrief', { briefUser: user });
+  // handle click
+  const handleClick = (item, user) => {
+    console.log(item)
+    if (item === 'bg') {
+      Keyboard.dismiss();
+    } else if (item === 'tag') {
+      // tag user
+      const taggingUsername = message.split('@').pop();
+      let newMessage = message.slice(0, message.length - taggingUsername.length);
+      setMessage(newMessage + user.name + ' ');
+    } else {
+      navigation.navigate('ProfileBrief', { briefUser: user });
+    }
   }
 
   // handle input change
   const handleTextChange = (text) => {
     setMessage(text);
-    if (text[text.length - 1] === '@') {
-      setTagging(true);
+    if (text.includes('@')) { // tagging people
+      const taggingUsername = text.split('@').pop().toLowerCase();
+      // separated by space -> not tagging
+      if (taggingUsername.includes(' ') && taggingUsers.length > 0) {
+        setTaggingUsers([]);
+        return;
+      }
+      const newUsers = [];
+      for (const u of props.users) {
+        if (u.id.toLowerCase().startsWith(taggingUsername) || u.name.toLowerCase().startsWith(taggingUsername)) {
+          newUsers.push(u);
+        }
+      }
+      setTaggingUsers(newUsers);
+    } else if (taggingUsers.length > 0) {
+      setTaggingUsers([]);
     }
   }
 
@@ -93,7 +116,6 @@ const Comments = ({ navigation, route }) => {
         message,
         { 
           commentId: newComment.id,
-          date: selectedDateString,
         }
       );
     }
@@ -101,7 +123,7 @@ const Comments = ({ navigation, route }) => {
 
   return (
     <>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <TouchableWithoutFeedback onPress={() => handleClick('bg')}>
         <SafeAreaView style={globalStyles.safeArea}>
           <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
             <Toolbar text={'活動'}/>
@@ -126,7 +148,7 @@ const Comments = ({ navigation, route }) => {
                       return (
                         <View style={styles.comment} key={comment.id}>
                           <View style={[globalStyles.flexRow, globalStyles.justifyContent.flexStart]}>
-                            <TouchableWithoutFeedback onPress={() => handleClick(commentUser)}>
+                            <TouchableWithoutFeedback onPress={() => handleClick('profile', commentUser)}>
                               <View style={[globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.flex1, styles.avatarRow]}>
                                 <View style={[globalStyles.flexCenter, styles.avatar, { backgroundColor: commentUser.color }]}>
                                   {url ? <Image source={{ uri: url }} style={styles.avatarImage} /> : <Text style={styles.avatarText}>{commentUser.name[0]}</Text>}
@@ -143,9 +165,30 @@ const Comments = ({ navigation, route }) => {
                   </Pressable>
                 </ScrollView>
               </View>
+              {/* tag users */}
+              {taggingUsers.length > 0 && <ScrollView style={styles.taggingUsers} keyboardShouldPersistTaps="always">
+                <Pressable>
+                  {taggingUsers.map((u, i) => {
+                    const url = props.urls[u.id];
+                    return (
+                      <TouchableWithoutFeedback key={u.id} onPress={() => handleClick('tag', u)}>
+                        <View style={[styles.tag, globalStyles.flexRow, globalStyles.alignItems.center]}>
+                          <View style={[styles.taggingAvatar, { backgroundColor: u.color }]}>
+                            {url ? <Image source={{ uri: url }} style={styles.taggingAvatarImage} /> : <Text style={styles.taggingAvatarText}>{u.name[0]}</Text>}
+                          </View>
+                          <View style={styles.taggingUserInfo}>
+                            <Text style={styles.taggingUsername}>{u.name}</Text>
+                            <Text style={styles.taggingUserId}>{u.id}</Text>
+                          </View>
+                        </View>
+                      </TouchableWithoutFeedback>
+                    )
+                  })}
+                </Pressable>
+              </ScrollView>}
               {/* input */}
               <View style={[globalStyles.flexRow]}>
-                <TextInput onBlur={() => setTagging(false)} placeholder='訊息...' multiline style={[globalStyles.flex1, styles.input]} value={message} onChangeText={text => handleTextChange(text)}/>
+                <TextInput placeholder='訊息...' onBlur={() => setTaggingUsers([])} multiline style={[globalStyles.flex1, styles.input]} value={message} onChangeText={text => handleTextChange(text)}/>
                 <Button
                   style={[globalStyles.flexCenter, styles.sendButton]}
                   textStyle={styles.sendButtonText}
@@ -234,6 +277,45 @@ const styles = StyleSheet.create({
   sendButtonText: {
     fontWeight: 'bold',
     fontSize: 16,
+  },
+
+  taggingUsers: {
+    height: 'auto',
+    maxHeight: 120,
+    paddingHorizontal: 16,
+    marginHorizontal: 8,
+    paddingVertical: 4,
+    borderTopWidth: .5,
+    borderTopColor: '#ddd',
+  },
+  tag: {
+    padding: 6,
+  },
+  taggingAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 20,
+    ...globalStyles.flexCenter,
+  },
+  taggingAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+  },
+  taggingAvatarText: {
+    fontSize: 11,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  taggingUserInfo: {
+    marginLeft: 12,
+  },
+  taggingUsername: {
+    fontWeight: 'bold',
+  },
+  taggingUserId: {
+    fontSize: 12,
+    color: '#888',
   },
 });
 

@@ -60,7 +60,9 @@ export const getTimeFromMinutes = (min) => {
 // convert 24 format to 12 format
 export const to12HourFormat = (time24) => {
   const [hours, minutes] = time24.split(':').map(Number);
-  const period = hours >= 12 ? '下午' : '上午';
+  const period = hours >= 12 ? 
+    hours > 18 ? '晚上' : '下午'
+    : hours < 6 ? '凌晨' : '早上';
   const hours12 = (hours % 12 || 12).toString();
   return `${period}${hours12}:${minutes.toString().padStart(2, '0')}`;
 }
@@ -289,6 +291,30 @@ export const sendPushNotification = async (expoPushToken, title, body, data) => 
     },
     body: JSON.stringify(message),
   });
+}
+
+// schedule push notification
+export const schedulePushNotification = async (dateString, timeString, title, message, dist) => {
+  const date = new Date(`${dateString}T${timeString}`);
+  date.setMinutes(date.getMinutes() - dist);
+  const secFromNow = Math.max((date.getTime() - new Date().getTime()) / 1000, 1);
+  const id = await Notifications.scheduleNotificationAsync({
+    content: {
+      title: title,
+      body: message,
+      sound: 'default',
+    },
+    trigger: {
+      seconds: secFromNow,
+    }
+  });
+  console.log('Scheduled notification!')
+  return id;
+}
+
+// cancel push notification
+export const cancelScheduledNotification = async (id) => {
+  await Notifications.cancelScheduledNotificationAsync(id);
 }
 
 // use interval

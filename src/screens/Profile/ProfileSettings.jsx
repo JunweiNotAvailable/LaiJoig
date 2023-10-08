@@ -1,4 +1,4 @@
-import { TextInput, Pressable, KeyboardAvoidingView, ScrollView, View, Text, SafeAreaView, StyleSheet, Keyboard, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
+import { TextInput, Pressable, KeyboardAvoidingView, ScrollView, View, Text, SafeAreaView, StyleSheet, Keyboard, TouchableWithoutFeedback } from 'react-native'
 import React, { useState } from 'react'
 import { globalStyles } from '../../utils/Constants'
 import Toolbar from '../../components/Toolbar'
@@ -7,6 +7,7 @@ import { useProfileState } from '../../context/ProfileContext'
 import Button from '../../components/Button'
 import axios from 'axios'
 import config from '../../../config.json'
+import Loading from '../../components/Loading'
 
 const ProfileSettings = () => {
 
@@ -39,7 +40,7 @@ const ProfileSettings = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={[styles.container, globalStyles.safeArea]}>
         <KeyboardAvoidingView style={[globalStyles.flex1]} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
-          <Toolbar text='設定'/>
+          <Toolbar text='個人檔案'/>
           <ScrollView style={[globalStyles.flex1]}>
             <Pressable>
               <View style={[styles.inputGroup, globalStyles.flexRow, globalStyles.alignItems.center]}>
@@ -55,7 +56,7 @@ const ProfileSettings = () => {
                 <TextInput style={[styles.input, focusing === 'aboutMe' ? styles.focus : {}]} onBlur={() => setFocusing('')} onFocus={() => setFocusing('aboutMe')} placeholder={title} value={aboutMe} onChangeText={text => setAboutMe(text)} multiline/>
               </View>
               <View style={[globalStyles.alignItems.center]}>
-                <Button onPress={saveChanges} icon={loading ? <ActivityIndicator size={17} color={'#fff'}/> : <Text style={styles.buttonText}>儲存</Text>} style={styles.saveButton}/>
+                <Button onPress={saveChanges} icon={loading ? <Loading size={17} color={'#fff'}/> : <Text style={styles.buttonText}>儲存</Text>} style={styles.saveButton}/>
               </View>
             </Pressable>
           </ScrollView>

@@ -49,8 +49,8 @@ const Home = () => {
 const Chat = () => {
   return (
     <ChatStateProvider>
-      <Stack.Navigator initialRouteName="GroupsList" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="GroupsList" component={GroupsList}/>
+      <Stack.Navigator initialRouteName="ChatRoom" screenOptions={{ headerShown: false }}>
+        {/* <Stack.Screen name="GroupsList" component={GroupsList}/> */}
         <Stack.Screen name="ChatRoom" component={ChatRoom}/>
       </Stack.Navigator>
     </ChatStateProvider>
@@ -80,15 +80,6 @@ const Notifications = () => {
 const Profile = ({ navigation, route }) => {
 
   const toSplash = route.params.toSplash;
-
-  React.useLayoutEffect(() => {
-    // const routeName = getFocusedRouteNameFromRoute(route);
-    // if (routeName === "Overview") {
-    //   navigation.setOptions({ tabBarStyle: { display: 'flex', borderTopWidth: 0 } });
-    // } else {
-    //   navigation.setOptions({ tabBarStyle: { display: 'none' } });
-    // }
-  }, [navigation, route]);
 
   return (
     <ProfileStateProvider>
@@ -153,7 +144,7 @@ const Main = ({ navigation, route }) => {
       <Tab.Screen name="Home" component={Home}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Icon name="calendar-text" size={26} color={focused ? globalStyles.colors.primary : '#000'} />
+            <Icon name="home" size={26} color={focused ? globalStyles.colors.primary : '#000'} />
           ),
         }}
       />
@@ -164,7 +155,9 @@ const Main = ({ navigation, route }) => {
             <Image source={focused ? urls.chatSelected : urls.chat} style={styles.imageStyle} />
           </View>
         ),
-      }} /> */}
+      }} listeners={({ navigation, route }) => ({
+        tabPress: () => props.setTrigger(!props.trigger)
+      })} /> */}
       {/* notifications (v2. Posts) */}
       <Tab.Screen name="Notifications" component={Notifications} options={{
         tabBarIcon: ({ focused }) => (

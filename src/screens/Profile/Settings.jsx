@@ -24,7 +24,7 @@ const Settings = ({ navigation, route }) => {
   const options = [
     { route: "ProfileSettings", icon: <FeatherIcon name='user' size={20} style={{ paddingHorizontal: 12 }}/>, name: "個人檔案" },
     { route: "Account", icon: <MaterialIcon name='account-circle' size={20} style={{ paddingHorizontal: 12 }}/>, name: "帳號" },
-    // { route: "Preference", icon: <FeatherIcon name='check-square' size={20} style={{ paddingHorizontal: 12 }}/>, name: "偏好" },
+    { route: "Preference", icon: <FeatherIcon name='check-square' size={20} style={{ paddingHorizontal: 12 }}/>, name: "我的喜好" },
     { route: "SignOut", icon: <FeatherIcon name='log-out' size={20} style={{ paddingHorizontal: 12 }}/>, name: "登出", onPress: signOut },
   ];
 

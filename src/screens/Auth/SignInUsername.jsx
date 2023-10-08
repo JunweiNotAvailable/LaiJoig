@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, ActivityIndicator, Text, StyleSheet, Keyboard, TouchableWithoutFeedback, TextInput, Platform } from 'react-native'
+import { KeyboardAvoidingView, Text, StyleSheet, Keyboard, TouchableWithoutFeedback, TextInput, Platform } from 'react-native'
 import React, { useState } from 'react';
 import { globalStyles } from '../../utils/Constants'
 import Button from '../../components/Button';
@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5'
 import axios from 'axios';
 import config from '../../../config.json';
 import { useAuthState } from '../../context/AuthContext';
+import Loading from '../../components/Loading';
 
 const SignInUsername = ({ navigation }) => {
 
@@ -42,7 +43,7 @@ const SignInUsername = ({ navigation }) => {
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
         <Text style={styles.title}>登入</Text>
         <TextInput value={userId} placeholder='使用者ID' autoFocus onFocus={() => setFocus('userId')} onBlur={() => setFocus('')} onChangeText={text => setUserId(text)} style={[styles.input, focus ? styles.focus : {}]}/>
-        <Button onPress={handleSubmit} icon={loading ? <ActivityIndicator color='#ffffff'/> : <Icon name="arrow-right" style={styles.buttonIcon}/>} style={[styles.button, isValid() ? {} : styles.buttonDisabled]}/>
+        <Button onPress={handleSubmit} icon={loading ? <Loading size={20} color='#ffffff'/> : <Icon name="arrow-right" style={styles.buttonIcon}/>} style={[styles.button, isValid() ? {} : styles.buttonDisabled]}/>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   )

@@ -2,12 +2,13 @@ import { View, Text, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, Key
 import React, { useState, useEffect } from 'react'
 import Toolbar from '../../components/Toolbar';
 import { globalStyles } from '../../utils/Constants';
-import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString, getDateStringsBetween } from '../../utils/Functions';
+import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString, getDateStringsBetween, cancelScheduledNotification } from '../../utils/Functions';
 import Button from '../../components/Button';
 import { useHomeState } from '../../context/HomeContext';
 import { useAppState } from '../../context/AppContext';
 import DatePicker from '../../components/DatePicker';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
 import config from '../../../config.json';
 
@@ -30,6 +31,8 @@ const EditActivity = ({ navigation, route }) => {
   const [endTime, setEndTime] = useState(activity.endTime);
   // description
   const [description, setDescription] = useState(activity.description);
+  // notification
+  const [hasNotification, setHasNotification] = useState(activity.notificationIds?.length ? true : false);
 
   const [start, setStart] = useState(getMinutesFromString(startTime) / 1440);
   const [end, setEnd] = useState(getMinutesFromString(endTime) / 1440);
@@ -76,6 +79,14 @@ const EditActivity = ({ navigation, route }) => {
     if (!isValidDelete()) return;
     const startDateString = getDateString(startDate);
     const endDateString = getDateString(endDate);
+    // cancel notifications
+    const dates = getDateStringsBetween(startDateString, endDateString);
+    for (const d of dates) {
+      const notificationId = activity.notificationIds?.find(o => o.dateString === d);
+      if (notificationId) {
+        await cancelScheduledNotification(notificationId.id);
+      }
+    }
     // delete entire activity
     if (startDateString === activity.startDateString && endDateString === activity.endDateString) {
       props.setActivities(props.activities.filter(a => a.id !== activity.id));
@@ -89,15 +100,17 @@ const EditActivity = ({ navigation, route }) => {
     }
     // set custom details if not delete all
     let custom = activity.custom;
-    const dates = getDateStringsBetween(startDateString, endDateString);
+    let notificationIds = activity.notificationIds;
     for (const d of dates) {
       custom[d] = {
         delete: true,
       };
+      notificationIds = notificationIds?.filter(o => o.dateString !== d);
     }
     const newActivity = {
       ...activity,
-      custom: custom
+      custom: custom,
+      notificationIds: notificationIds,
     };
     props.setActivities(props.activities.map(a => a.id === newActivity.id ? newActivity : a));
     // back to home page
@@ -114,25 +127,38 @@ const EditActivity = ({ navigation, route }) => {
     if (!isValid()) return;
     const startDateString = getDateString(startDate);
     const endDateString = getDateString(endDate);
-    // set custom details
-    let custom = activity.custom;
     const dates = getDateStringsBetween(startDateString, endDateString);
+    let custom = activity.custom;
+    let notificationIds = activity.notificationIds || [];
     for (const d of dates) {
+      // set custom details
       custom[d] = {
         iso: new Date().toISOString(),
         startTime: startTime,
         endTime: endTime,
         description: description,
       };
+      // remove original notifications
+      const notificationId = notificationIds?.find(o => o.dateString === d);
+      if (notificationId) {
+        await cancelScheduledNotification(notificationId.id);
+      }
+      // add new notificaitons
+      if (hasNotification) {
+        const notificationId = await schedulePushNotification(d, startTime, `${props.user.name}即將有一項活動 ${to12HourFormat(startTime)}`, description, 30);
+        notificationIds.push({ dateString: d, id: notificationId });
+      }
     }
     const newActivity = (startDateString === activity.startDateString && endDateString === activity.endDateString) ? {
       ...activity,
       startTime: startTime,
       endTime: endTime,
       description: description,
+      notificationIds: notificationIds,
     } : {
       ...activity,
-      custom: custom
+      custom: custom,
+      notificationIds: notificationIds,
     };
     props.setActivities(props.activities.map(a => a.id === newActivity.id ? newActivity : a));
     // back to home page
@@ -156,6 +182,7 @@ const EditActivity = ({ navigation, route }) => {
               onResponderRelease={handleRelease}
             >
               <Pressable>
+
                 {/* date */}
                 <Text style={styles.subtitle}>日期</Text>
                 <View style={[globalStyles.flexRow, styles.buttonRow, globalStyles.alignItems.center]}>
@@ -163,6 +190,7 @@ const EditActivity = ({ navigation, route }) => {
                   <Text style={{ marginHorizontal: 16 }}>-</Text>
                   <Button style={[styles.pickerButton, (picking === 'end' ? styles.pickerButtonFocused : {}), globalStyles.flexCenter]} textStyle={styles.pickerButtonText} text={getDateStringCh(endDate)} onPress={() => setPicking('end')}/>
                 </View>
+
                 {/* time */}
                 <Text style={styles.subtitle}>時間</Text>
                 <View style={[globalStyles.justifyContent.flexStart, globalStyles.alignItems.center, globalStyles.flexRow]}>
@@ -177,44 +205,45 @@ const EditActivity = ({ navigation, route }) => {
                   <Text style={styles.timeText}>{to12HourFormat(endTime)}</Text>
                 </View>
                 <View style={styles.sliderContainer}>
-                <View style={styles.slider}
-                  onStartShouldSetResponder={() => true}
-                  onResponderStart={(e) => {
-                    const x = e.nativeEvent.pageX - 22;
-                    const min = 1439 * (x / barWidth);
-                    const n = min / 1440;
-                    if (Math.abs(n - start) <= Math.abs(n - end)) {
-                      setStartTime(getTimeFromMinutes(Math.floor((min - (min % 5)))));
-                      setSliding('start')
-                    } else {
-                      setEndTime(getTimeFromMinutes(Math.floor((min - (min % 5)))));
-                      setSliding('end')
-                    }
-                  }}
-                  onResponderMove={handleMove}
-                  onResponderRelease={handleRelease}
-                >
-                  <View style={styles.sliderBar}>
-                    {/* start button */}
-                    <View style={[globalStyles.absolute, styles.buttonOutline, globalStyles.flexCenter, (sliding === 'start' ? styles.buttonOutlineActive : {}), {
-                      left: start * barWidth - 10,
-                    }]} pointerEvents="none">
-                      <View style={styles.button}/>
-                    </View>
-                    {/* progress bar */}
-                    <View style={[globalStyles.absolute, styles.bar, {
-                      left: start * barWidth,
-                      width: barWidth * (end - start)
-                    }]}/>
-                    {/* end button */}
-                    <View style={[globalStyles.absolute, styles.buttonOutline, globalStyles.flexCenter, (sliding === 'end' ? styles.buttonOutlineActive : {}), {
-                      left: end * barWidth - 10,
-                    }]} pointerEvents="none">
-                      <View style={styles.button}/>
+                  <View style={styles.slider}
+                    onStartShouldSetResponder={() => true}
+                    onResponderStart={(e) => {
+                      const x = e.nativeEvent.pageX - 22;
+                      const min = 1439 * (x / barWidth);
+                      const n = min / 1440;
+                      if (Math.abs(n - start) <= Math.abs(n - end)) {
+                        setStartTime(getTimeFromMinutes(Math.floor((min - (min % 5)))));
+                        setSliding('start')
+                      } else {
+                        setEndTime(getTimeFromMinutes(Math.floor((min - (min % 5)))));
+                        setSliding('end')
+                      }
+                    }}
+                    onResponderMove={handleMove}
+                    onResponderRelease={handleRelease}
+                  >
+                    <View style={styles.sliderBar}>
+                      {/* start button */}
+                      <View style={[globalStyles.absolute, styles.buttonOutline, globalStyles.flexCenter, (sliding === 'start' ? styles.buttonOutlineActive : {}), {
+                        left: start * barWidth - 10,
+                      }]} pointerEvents="none">
+                        <View style={styles.button}/>
+                      </View>
+                      {/* progress bar */}
+                      <View style={[globalStyles.absolute, styles.bar, {
+                        left: start * barWidth,
+                        width: barWidth * (end - start)
+                      }]}/>
+                      {/* end button */}
+                      <View style={[globalStyles.absolute, styles.buttonOutline, globalStyles.flexCenter, (sliding === 'end' ? styles.buttonOutlineActive : {}), {
+                        left: end * barWidth - 10,
+                      }]} pointerEvents="none">
+                        <View style={styles.button}/>
+                      </View>
                     </View>
                   </View>
                 </View>
-                </View>
+
                 {/* description */}
                 <Text style={styles.subtitle}>活動</Text>
                 <TextInput 
@@ -224,6 +253,20 @@ const EditActivity = ({ navigation, route }) => {
                   value={description}
                   onChangeText={(text) => setDescription(text)}
                 />
+
+                {/* notification */}
+                <Button icon={<View style={[styles.checkboxContainer, globalStyles.flex1, globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.justifyContent.flexStart]}>
+                  <View style={[styles.checkbox, hasNotification ? styles.checked : {}]}>
+                    <Icon name="check" size={10} color="#fff"/>
+                  </View>
+                  <Text style={{ fontSize: 16 }}>通知 ( 活動前30分鐘 )</Text>
+                </View>} onPress={() => setHasNotification(!hasNotification)}/>
+
+                {/* invite people */}
+                
+                {/* margin bottom */}
+                <View style={{ marginBottom: 76 }}/>
+
               </Pressable>
             </ScrollView>
             <View style={styles.buttonContainer}>
@@ -320,7 +363,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 8,
     borderColor: '#ccc',
-    marginBottom: 76,
     textAlignVertical: 'top',
   },
   buttonContainer: {
@@ -353,6 +395,22 @@ const styles = StyleSheet.create({
   },
   disabledText: {
     color: '#ddd',
+  },
+  checkboxContainer: {
+    marginTop: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    ...globalStyles.flexCenter,
+    borderRadius: 20,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    marginRight: 12,
+  },
+  checked: {
+    backgroundColor: globalStyles.colors.primary,
+    borderColor: globalStyles.colors.primary,
   },
 });
 

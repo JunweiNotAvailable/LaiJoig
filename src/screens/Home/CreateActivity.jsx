@@ -2,12 +2,13 @@ import { View, Text, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, Key
 import React, { useState, useEffect } from 'react'
 import Toolbar from '../../components/Toolbar';
 import { globalStyles } from '../../utils/Constants';
-import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString } from '../../utils/Functions';
+import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString, schedulePushNotification, getDateStringsBetween } from '../../utils/Functions';
 import Button from '../../components/Button';
 import { useHomeState } from '../../context/HomeContext';
 import { useAppState } from '../../context/AppContext';
 import DatePicker from '../../components/DatePicker';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
 import config from '../../../config.json';
 
@@ -31,6 +32,8 @@ const CreateActivity = () => {
   const [endTime, setEndTime] = useState('16:00');
   // description
   const [description, setDescription] = useState('');
+  // notification
+  const [hasNotification, setHasNotification] = useState(true);
 
   const [start, setStart] = useState(getMinutesFromString(startTime) / 1440);
   const [end, setEnd] = useState(getMinutesFromString(endTime) / 1440);
@@ -73,6 +76,14 @@ const CreateActivity = () => {
     if (!isValid()) return;
     const startDateString = getDateString(startDate);
     const endDateString = getDateString(endDate);
+    // schedule notification
+    const notificationIds = [];
+    const dates = getDateStringsBetween(startDateString, endDateString);
+    for (const ds of dates) {
+      const notificationId = hasNotification ? await schedulePushNotification(ds, startTime, `${props.user.name}${to12HourFormat(startTime)}有一項活動`, description, 30) : null;
+      notificationIds.push({ dateString: ds, id: notificationId });
+    }
+
     const newActivity = {
       id: getRandomString(12),
       iso: new Date().toISOString(),
@@ -83,6 +94,7 @@ const CreateActivity = () => {
       userId: props.user.id,
       description: description,
       groupId: props.group.id,
+      notificationIds: notificationIds,
       custom: {},
     };
     const fm = props.user.activityMonths[0] < startDateString ? props.user.activityMonths[0] : startDateString;
@@ -116,6 +128,7 @@ const CreateActivity = () => {
               onResponderRelease={handleRelease}
             >
               <Pressable>
+
                 {/* date */}
                 <Text style={styles.subtitle}>日期</Text>
                 <View style={[globalStyles.flexRow, styles.buttonRow, globalStyles.alignItems.center]}>
@@ -123,6 +136,7 @@ const CreateActivity = () => {
                   <Text style={{ marginHorizontal: 16 }}>-</Text>
                   <Button style={[styles.pickerButton, (picking === 'end' ? styles.pickerButtonFocused : {}), globalStyles.flexCenter]} textStyle={styles.pickerButtonText} text={getDateStringCh(endDate)} onPress={() => setPicking('end')}/>
                 </View>
+
                 {/* time */}
                 <Text style={styles.subtitle}>時間</Text>
                 <View style={[globalStyles.justifyContent.flexStart, globalStyles.alignItems.center, globalStyles.flexRow]}>
@@ -175,6 +189,7 @@ const CreateActivity = () => {
                   </View>
                 </View>
                 </View>
+
                 {/* description */}
                 <Text style={styles.subtitle}>活動</Text>
                 <TextInput 
@@ -184,6 +199,20 @@ const CreateActivity = () => {
                   value={description}
                   onChangeText={(text) => setDescription(text)}
                 />
+
+                {/* notification */}
+                <Button icon={<View style={[styles.checkboxContainer, globalStyles.flex1, globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.justifyContent.flexStart]}>
+                  <View style={[styles.checkbox, hasNotification ? styles.checked : {}]}>
+                    <Icon name="check" size={10} color="#fff"/>
+                  </View>
+                  <Text style={{ fontSize: 16 }}>通知 ( 活動前30分鐘 )</Text>
+                </View>} onPress={() => setHasNotification(!hasNotification)}/>
+
+                {/* invite people */}
+                
+                {/* margin bottom */}
+                <View style={{ marginBottom: 76 }}/>
+
               </Pressable>
             </ScrollView>
             <View style={styles.buttonContainer}>
@@ -277,7 +306,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 8,
     borderColor: '#ccc',
-    marginBottom: 76,
+    marginBottom: 8,
     textAlignVertical: 'top',
   },
   buttonContainer: {
@@ -306,6 +335,22 @@ const styles = StyleSheet.create({
   },
   disabledText: {
     color: '#ddd',
+  },
+  checkboxContainer: {
+    marginTop: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    ...globalStyles.flexCenter,
+    borderRadius: 20,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    marginRight: 12,
+  },
+  checked: {
+    backgroundColor: globalStyles.colors.primary,
+    borderColor: globalStyles.colors.primary,
   },
 });
 

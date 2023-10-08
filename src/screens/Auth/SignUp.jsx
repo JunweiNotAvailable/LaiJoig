@@ -1,5 +1,5 @@
 import { globalStyles } from '../../utils/Constants'
-import { TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator, Keyboard, View, Text, StyleSheet, SafeAreaView } from 'react-native'
+import { TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, Keyboard, View, Text, StyleSheet, SafeAreaView } from 'react-native'
 import React, { useState } from 'react'
 import Button from '../../components/Button';
 import { useAuthState } from '../../context/AuthContext';
@@ -10,6 +10,7 @@ import axios from 'axios';
 import config from '../../../config.json';
 import { Entypo } from '@expo/vector-icons';
 import { getDateString, getRandomHexColor, getRandomString, registerForPushNotificationsAsync } from '../../utils/Functions';
+import Loading from '../../components/Loading';
 
 const SignUp = ({ navigation }) => {
 
@@ -99,7 +100,7 @@ const SignUp = ({ navigation }) => {
           <TextInput value={username} placeholder='你的名稱' autoFocus onFocus={() => setFocus('username')} onBlur={() => setFocus('')} onChangeText={text => setUsername(text)} style={[styles.input, focus === 'username' ? styles.focus : {}]}/>
           <TextInput secureTextEntry value={password} placeholder='密碼' onFocus={() => setFocus('password')} onBlur={() => setFocus('')} onChangeText={text => setPassword(text)} style={[styles.input, focus === 'password' ? styles.focus : {}]}/>
           <TextInput secureTextEntry value={confirmPassword} placeholder='確認密碼' onFocus={() => setFocus('confirmPassword')} onBlur={() => setFocus('')} onChangeText={text => setConfirmPassword(text)} style={[styles.input, focus === 'confirmPassword' ? styles.focus : {}]}/>
-          <Button onPress={handleSubmit} icon={loading ? <ActivityIndicator color='#ffffff'/> : <Icon name="arrow-right" style={styles.buttonIcon}/>} style={[styles.button, isValid() ? {} : styles.buttonDisabled]}/>
+          <Button onPress={handleSubmit} icon={loading ? <Loading size={20} color='#ffffff'/> : <Icon name="arrow-right" style={styles.buttonIcon}/>} style={[styles.button, isValid() ? {} : styles.buttonDisabled]}/>
           {/* back button */}
           <Button icon={<Entypo name='chevron-thin-left' size={24}/>} style={styles.back} onPress={() => navigation.goBack()}/>
         </KeyboardAvoidingView>

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, Keyboard } from 'react-native'
+import { View, Text, StyleSheet, SafeAreaView, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, Keyboard } from 'react-native'
 import { globalStyles } from '../../utils/Constants'
 import React, { useState } from 'react'
 import Button from '../../components/Button'
@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import config from '../../../config.json';
 import { registerForPushNotificationsAsync } from '../../utils/Functions';
+import Loading from '../../components/Loading';
 
 const SignInPassword = ({ navigation }) => {
 
@@ -80,7 +81,7 @@ const SignInPassword = ({ navigation }) => {
           <Text style={styles.title}>歡迎回來</Text>
           {errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>}
           <TextInput secureTextEntry value={password} placeholder='密碼' autoFocus onFocus={() => setFocus('password')} onBlur={() => setFocus('')} onChangeText={text => setPassword(text)} style={[styles.input, focus ? styles.focus : {}]}/>
-          <Button onPress={handleSubmit} icon={loading ? <ActivityIndicator color='#ffffff'/> : <Icon name="arrow-right" style={styles.buttonIcon}/>} style={[styles.button, isValid() ? {} : styles.buttonDisabled]}/>
+          <Button onPress={handleSubmit} icon={loading ? <Loading size={20} color='#ffffff'/> : <Icon name="arrow-right" style={styles.buttonIcon}/>} style={[styles.button, isValid() ? {} : styles.buttonDisabled]}/>
           {/* back button */}
           <Button icon={<Entypo name='chevron-thin-left' size={24}/>} style={styles.back} onPress={() => navigation.goBack()}/>
         </KeyboardAvoidingView>

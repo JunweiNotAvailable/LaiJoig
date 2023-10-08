@@ -10,7 +10,7 @@ import { registerForPushNotificationsAsync } from '../utils/Functions';
 const Splash = ({ navigation, route }) => {
 
   const props = useAppState();
-  const logoUrl = require('../../assets/icon.png');
+  const logoUrl = require('../../assets/images/logo.png');
 
   // load current user
   useEffect(() => {

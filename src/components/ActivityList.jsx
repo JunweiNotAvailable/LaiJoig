@@ -1,10 +1,11 @@
-import { View, Image, Text, StyleSheet, ScrollView, Pressable, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
+import { View, Image, Text, StyleSheet, ScrollView, Pressable, TouchableWithoutFeedback } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { globalStyles, weekDays } from '../utils/Constants';
 import { getDateString, useInterval } from '../utils/Functions';
 import Button from './Button';
 import { useNavigation } from '@react-navigation/native';
 import Activitiy from './Activitiy';
+import Loading from './Loading';
 
 const ActivityList = ( props ) => {
   const navigation = useNavigation();
@@ -41,14 +42,13 @@ const ActivityList = ( props ) => {
         <Button
           style={styles.addButton}
           text={'新增'}
-          textStyle={{ fontSize: 16 }}
           onPress={() => navigation.navigate('CreateActivity')}
         />
       </View>
       {/* scroll view */}
       {props.loading ? 
       <View style={[globalStyles.flex1, globalStyles.flexCenter]}>
-        <ActivityIndicator/>
+        <Loading/>
       </View>
       :
       activities.length === 0 ? 
@@ -104,8 +104,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   addButton: {
-    padding: 4,
-    paddingHorizontal: 12,
+    padding: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#eee',
   },
   activityContainer: {
     marginTop: 8,

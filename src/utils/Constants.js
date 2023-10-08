@@ -52,6 +52,6 @@ export const urls = {
   settings: require('../../assets/images/settings.png'),
 }
 
-export const weekDays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+export const weekDays = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
 export const hours = Array.from({ length: 24 }, (_, i) => i);
 export const minutes = Array.from({ length: 12 }, (_, i) => 5 * i);
