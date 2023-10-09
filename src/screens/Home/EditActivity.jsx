@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, Key
 import React, { useState, useEffect } from 'react'
 import Toolbar from '../../components/Toolbar';
 import { globalStyles } from '../../utils/Constants';
-import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString, getDateStringsBetween, cancelScheduledNotification } from '../../utils/Functions';
+import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString, getDateStringsBetween, cancelScheduledNotification, schedulePushNotification } from '../../utils/Functions';
 import Button from '../../components/Button';
 import { useHomeState } from '../../context/HomeContext';
 import { useAppState } from '../../context/AppContext';
@@ -145,7 +145,7 @@ const EditActivity = ({ navigation, route }) => {
       }
       // add new notificaitons
       if (hasNotification) {
-        const notificationId = await schedulePushNotification(d, startTime, `${props.user.name}即將有一項活動 ${to12HourFormat(startTime)}`, description, 30);
+        const notificationId = await schedulePushNotification(d, startTime, `${props.user.name}${to12HourFormat(startTime)}有一項活動`, description, 30);
         notificationIds.push({ dateString: d, id: notificationId });
       }
     }

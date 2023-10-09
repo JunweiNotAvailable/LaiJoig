@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, Keyboard, TextInput, SafeAreaView, ScrollView, Pressable, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, Image, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, Keyboard, TextInput, SafeAreaView, ScrollView, Pressable, TouchableWithoutFeedback } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import Toolbar from '../../components/Toolbar';
 import { globalStyles } from '../../utils/Constants';
-import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString, schedulePushNotification, getDateStringsBetween } from '../../utils/Functions';
+import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString, schedulePushNotification, getDateStringsBetween, sendPushNotification } from '../../utils/Functions';
 import Button from '../../components/Button';
 import { useHomeState } from '../../context/HomeContext';
 import { useAppState } from '../../context/AppContext';
@@ -34,6 +34,8 @@ const CreateActivity = () => {
   const [description, setDescription] = useState('');
   // notification
   const [hasNotification, setHasNotification] = useState(true);
+  // inviting users
+  const [invitingUsers, setInvitingUsers] = useState([]);
 
   const [start, setStart] = useState(getMinutesFromString(startTime) / 1440);
   const [end, setEnd] = useState(getMinutesFromString(endTime) / 1440);
@@ -81,9 +83,9 @@ const CreateActivity = () => {
     const dates = getDateStringsBetween(startDateString, endDateString);
     for (const ds of dates) {
       const notificationId = hasNotification ? await schedulePushNotification(ds, startTime, `${props.user.name}${to12HourFormat(startTime)}有一項活動`, description, 30) : null;
-      notificationIds.push({ dateString: ds, id: notificationId });
+      hasNotification && notificationIds.push({ dateString: ds, id: notificationId });
     }
-
+    // create new activity
     const newActivity = {
       id: getRandomString(12),
       iso: new Date().toISOString(),
@@ -96,7 +98,28 @@ const CreateActivity = () => {
       groupId: props.group.id,
       notificationIds: notificationIds,
       custom: {},
+      partners: [],
     };
+    // create new invitaions
+    const invitation = {
+      activityId: newActivity.id,
+      iso: new Date().toISOString(),
+    };
+    for (const uid of invitingUsers) {
+      let userInvitaions = (await axios.get(`${config.api}/access-item`, {params: {
+        table: 'Laijoig-Invitations',
+        id: uid,
+      }})).data.Item;
+      userInvitaions = {
+        id: uid,
+        invitations: userInvitaions ? [...userInvitaions.invitations, invitation] : [invitation],
+      };
+      await axios.post(`${config.api}/access-item`, {
+        table: 'Laijoig-Invitations',
+        data: userInvitaions,
+      });
+    }
+
     const fm = props.user.activityMonths[0] < startDateString ? props.user.activityMonths[0] : startDateString;
     const em = props.user.activityMonths[1] > endDateString ? props.user.activityMonths[1] : endDateString;
     const newUser = { ...props.user, activityMonths: [fm, em] };
@@ -113,6 +136,19 @@ const CreateActivity = () => {
       table: 'Laijoig-Users',
       data: newUser
     });
+    // send push notification to invited users
+    for (const uid of invitingUsers) {
+      const user = props.users.find(u => u.id === uid);
+      await sendPushNotification(
+        // user.deviceToken,
+        props.user.deviceToken,
+        `${props.user.name}邀請你參加活動`,
+        `${to12HourFormat(startTime)}-${to12HourFormat(endTime)} ${description}`,
+        { 
+          activityId: newActivity.id,
+        }
+      );
+    }
   }
 
   return (
@@ -209,6 +245,38 @@ const CreateActivity = () => {
                 </View>} onPress={() => setHasNotification(!hasNotification)}/>
 
                 {/* invite people */}
+                <Text style={[styles.subtitle, { marginTop: 16 }]}>邀請 ( {invitingUsers.length} )</Text>
+                <View style={[globalStyles.flexRow]}>
+                  <Button text='邀請所有人' style={styles.allDayButton} textStyle={styles.allDayText}
+                    onPress={() => setInvitingUsers(props.users.filter(u => u.id !== props.user.id).map(u => u.id))}
+                  />
+                </View>
+                <ScrollView style={styles.usersList} nestedScrollEnabled={true}>
+                  <Pressable>
+                    {props.users.filter(u => u.id !== props.user.id).map((u, i) => {
+                      const url = props.urls[u.id];
+                      return (
+                        <TouchableWithoutFeedback key={u.id} onPress={() => {
+                          if (!invitingUsers.includes(u.id)) {
+                            setInvitingUsers([...invitingUsers, u.id]);
+                          } else {
+                            setInvitingUsers(invitingUsers.filter(id => id !== u.id));
+                          }
+                        }}>
+                          <View style={[invitingUsers.includes(u.id) ? styles.inviting : {}, styles.invitingUser, globalStyles.flexRow, globalStyles.alignItems.center]}>
+                            <View style={[styles.taggingAvatar, { backgroundColor: u.color }]}>
+                              {url ? <Image source={{ uri: url }} style={styles.taggingAvatarImage} /> : <Text style={styles.taggingAvatarText}>{u.name[0]}</Text>}
+                            </View>
+                            <View style={styles.taggingUserInfo}>
+                              <Text style={styles.taggingUsername}>{u.name}</Text>
+                              <Text style={styles.taggingUserId}>{u.id}</Text>
+                            </View>
+                          </View>
+                        </TouchableWithoutFeedback>
+                      )
+                    })}
+                  </Pressable>
+                </ScrollView>
                 
                 {/* margin bottom */}
                 <View style={{ marginBottom: 76 }}/>
@@ -237,6 +305,7 @@ const styles = StyleSheet.create({
   subtitle: {
     marginTop: 8,
     fontSize: 16,
+    fontWeight: 'bold',
   },
   buttonRow: {
     marginTop: 8,
@@ -337,7 +406,7 @@ const styles = StyleSheet.create({
     color: '#ddd',
   },
   checkboxContainer: {
-    marginTop: 8,
+    marginVertical: 8,
   },
   checkbox: {
     width: 20,
@@ -351,6 +420,47 @@ const styles = StyleSheet.create({
   checked: {
     backgroundColor: globalStyles.colors.primary,
     borderColor: globalStyles.colors.primary,
+  },
+
+  usersList: {
+    height: 'auto',
+    maxHeight: 160,
+    borderWidth: .5,
+    borderColor: '#ddd',
+    borderRadius: 12,
+  },
+  invitingUser: {
+    padding: 6,
+    paddingHorizontal: 22,
+  },
+  inviting: {
+    backgroundColor: globalStyles.colors.green + '44',
+  },
+  taggingAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 20,
+    ...globalStyles.flexCenter,
+  },
+  taggingAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+  },
+  taggingAvatarText: {
+    fontSize: 11,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  taggingUserInfo: {
+    marginLeft: 12,
+  },
+  taggingUsername: {
+    fontWeight: 'bold',
+  },
+  taggingUserId: {
+    fontSize: 12,
+    color: '#888',
   },
 });
 

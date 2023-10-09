@@ -56,6 +56,7 @@ export const AppStateProvider = ({ children }) => {
       // load data from database when recieved notification
       const commentId = notification.request.content.data.commentId;
       const messageId = notification.request.content.data.messageId;
+      const activityId = notification.request.content.data.activityId;
       if (commentId) { // if it's comment
         const comment = (await axios.get(`${config.api}/access-item`, {params: {
           table: 'Laijoig-Comments',
@@ -64,6 +65,8 @@ export const AppStateProvider = ({ children }) => {
         setReceivedComment(comment);
       } else if (messageId) { // if it's message
 
+      } else if (activityId) { // if it's invitation
+
       }
     });
 
@@ -71,6 +74,7 @@ export const AppStateProvider = ({ children }) => {
       // load data from database when recieved notification
       const commentId = response.notification.request.content.data.commentId;
       const messageId = response.notification.request.content.data.messageId;
+      const activityId = response.notification.request.content.data.activityId;
       if (commentId) { // if it's comment
         const comment = (await axios.get(`${config.api}/access-item`, {params: {
           table: 'Laijoig-Comments',
@@ -80,6 +84,8 @@ export const AppStateProvider = ({ children }) => {
         setGoToNotifications(response.notification.request.identifier);
       } else if (messageId) { // if it's message
         
+      } else if (activityId) { // if it's invitation
+
       }
     });
 
