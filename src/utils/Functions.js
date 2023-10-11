@@ -315,6 +315,7 @@ export const schedulePushNotification = async (dateString, timeString, title, me
 // cancel push notification
 export const cancelScheduledNotification = async (id) => {
   await Notifications.cancelScheduledNotificationAsync(id);
+  console.log('cancelled notification!')
 }
 
 // use interval

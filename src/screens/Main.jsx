@@ -121,11 +121,14 @@ const Main = ({ navigation, route }) => {
     }
   }, [props.user]);
 
+  // navigate to pages
   useEffect(() => {
     if (props.goToNotifications) {
       navigation.navigate('Notifications');
+    } else if (props.goToInvitations) {
+      navigation.navigate('Profile');
     }
-  }, [props.goToNotifications]);
+  }, [props.goToNotifications, props.goToInvitations]);
 
   const toSplash = () => {
     navigation.replace('Splash');
@@ -141,13 +144,13 @@ const Main = ({ navigation, route }) => {
       tabBarHideOnKeyboard: Platform.OS === 'android',
     }}>
       {/* home */}
-      <Tab.Screen name="Home" component={Home}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <Icon name="home" size={26} color={focused ? globalStyles.colors.primary : '#000'} />
-          ),
-        }}
-      />
+      <Tab.Screen name="Home" component={Home} options={{
+        tabBarIcon: ({ focused }) => (
+          <Icon name="home" size={26} color={focused ? globalStyles.colors.primary : '#000'} />
+        ),
+      }} listeners={({ navigation, route }) => ({
+        tabPress: () => props.setTrigger(!props.trigger)
+      })} />
       {/* chat */}
       {/* <Tab.Screen name="Chat" component={Chat} options={{
         tabBarIcon: ({ focused }) => (

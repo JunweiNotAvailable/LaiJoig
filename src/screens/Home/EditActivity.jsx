@@ -87,6 +87,17 @@ const EditActivity = ({ navigation, route }) => {
         await cancelScheduledNotification(notificationId.id);
       }
     }
+    // cancel partner notifications
+    if (activity.partners) {
+      for (const p of activity.partners) {
+        for (const d of dates) {
+          const notificationId = p.notificationIds.find(n => n.dateString === d);
+          if (notificationId) {
+            await cancelScheduledNotification(notificationId.id);
+          }
+        }
+      }
+    }
     // delete entire activity
     if (startDateString === activity.startDateString && endDateString === activity.endDateString) {
       props.setActivities(props.activities.filter(a => a.id !== activity.id));
@@ -143,10 +154,25 @@ const EditActivity = ({ navigation, route }) => {
       if (notificationId) {
         await cancelScheduledNotification(notificationId.id);
       }
+      // cancel partner notifications
+      if (activity.partners) {
+        for (const p of activity.partners) {
+          const notificationId = p.notificationIds.find(n => n.dateString === d);
+          if (notificationId) {
+            await cancelScheduledNotification(notificationId.id);
+          }
+        }
+      }
       // add new notificaitons
       if (hasNotification) {
         const notificationId = await schedulePushNotification(d, startTime, `${props.user.name}${to12HourFormat(startTime)}有一項活動`, description, 30);
         notificationIds.push({ dateString: d, id: notificationId });
+      }
+      if (activity.partners) {
+        for (const p of activity.partners) {
+          const notificationId = await schedulePushNotification(d, startTime, `${props.user.name}${to12HourFormat(startTime)}有一項活動`, description, 30);
+          p.notificationIds?.push({ dateString: d, id: notificationId });
+        }
       }
     }
     const newActivity = (startDateString === activity.startDateString && endDateString === activity.endDateString) ? {

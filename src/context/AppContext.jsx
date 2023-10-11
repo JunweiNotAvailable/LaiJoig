@@ -35,16 +35,22 @@ export const AppStateProvider = ({ children }) => {
   // }, []);
 
 
-  const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
+  // data of user
+  const [users, setUsers] = useState([]);
   const [groups, setGroups] = useState([]);
   const [group, setGroup] = useState(null);
   const [urls, setUrls] = useState({});
+  
   const [preference, setPreference] = useState({});
   const [notifications, setNotifications] = useState([]);
   // notification data
   const [receivedComment, setReceivedComment] = useState(null);
   const [goToNotifications, setGoToNotifications] = useState(null);
+  // invitations
+  const [invitations, setInvitations] = useState(null);
+  const [invitingActivities, setInvitingActivities] = useState([]);
+  const [goToInvitations, setGoToInvitations] = useState(false);
 
   const notificationListener = useRef();
   const responseListener = useRef();
@@ -66,7 +72,12 @@ export const AppStateProvider = ({ children }) => {
       } else if (messageId) { // if it's message
 
       } else if (activityId) { // if it's invitation
-
+        // invitations
+        const newInvitations = (await axios.get(`${config.api}/access-item`, {params: {
+          table: 'Laijoig-Invitations',
+          id: user.id,
+        }})).data.Item;
+        setInvitations(newInvitations);
       }
     });
 
@@ -85,7 +96,7 @@ export const AppStateProvider = ({ children }) => {
       } else if (messageId) { // if it's message
         
       } else if (activityId) { // if it's invitation
-
+        setGoToInvitations(true);
       }
     });
 
@@ -112,6 +123,7 @@ export const AppStateProvider = ({ children }) => {
     })();
   }, []);
   
+  // load urls after loaded users
   useEffect(() => {
     (async () => {
       let newUrls = {};
@@ -125,6 +137,7 @@ export const AppStateProvider = ({ children }) => {
     })();
   }, [users]);
   
+  // load data after user
   useEffect(() => {
     if (user) {
       (async () => {
@@ -137,15 +150,41 @@ export const AppStateProvider = ({ children }) => {
         //   newUsers.push(newUser);
         // }
         // setUsers([...newUsers, user]);
+        
+        // users
         const newUsers = (await axios.get(`${config.api}/access-items`, {params: {
           table: 'Laijoig-Users',
           filter: ''
         }})).data;
         setUsers(newUsers);
+        // invitations
+        const newInvitations = (await axios.get(`${config.api}/access-item`, {params: {
+          table: 'Laijoig-Invitations',
+          id: user.id,
+        }})).data.Item;
+        setInvitations(newInvitations);
       })();
     }
   }, [user]);
-  
+
+  // load activities after invitations
+  useEffect(() => {
+    if (invitations) {
+      (async () => {
+        const newActivities = [];
+        for (const invitation of invitations.invitations) {
+          const data = (await axios.get(`${config.api}/access-item`, {params: {
+            table: 'Laijoig-Activities',
+            id: invitation.activityId,
+          }})).data.Item;
+          if (data) {
+            newActivities.push(data);
+          }
+        }
+        setInvitingActivities(newActivities);
+      })();
+    }
+  }, [invitations]);
 
   return (
     <AppStateContext.Provider value={{ 
@@ -154,10 +193,13 @@ export const AppStateProvider = ({ children }) => {
       group, setGroup,
       groups, setGroups,
       urls, setUrls,
+      invitations, setInvitations,
+      invitingActivities, setInvitingActivities,
       preference, setPreference,
       receivedComment, setReceivedComment,
-      goToNotifications, setGoToNotifications,
       notifications, setNotifications,
+      goToNotifications, setGoToNotifications,
+      goToInvitations, setGoToInvitations,
     }}>
       {children}
     </AppStateContext.Provider>

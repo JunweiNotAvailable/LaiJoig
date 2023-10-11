@@ -111,7 +111,7 @@ const CreateActivity = () => {
         id: uid,
       }})).data.Item;
       userInvitaions = {
-        id: uid,
+        id: props.user.id,
         invitations: userInvitaions ? [...userInvitaions.invitations, invitation] : [invitation],
       };
       await axios.post(`${config.api}/access-item`, {
@@ -140,8 +140,7 @@ const CreateActivity = () => {
     for (const uid of invitingUsers) {
       const user = props.users.find(u => u.id === uid);
       await sendPushNotification(
-        // user.deviceToken,
-        props.user.deviceToken,
+        user.deviceToken,
         `${props.user.name}邀請你參加活動`,
         `${to12HourFormat(startTime)}-${to12HourFormat(endTime)} ${description}`,
         { 

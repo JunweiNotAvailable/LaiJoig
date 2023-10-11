@@ -1,9 +1,10 @@
-import { View, Text, Image, StyleSheet } from 'react-native'
+import { View, Text, Image, ScrollView, Pressable, StyleSheet, SafeAreaView } from 'react-native'
 import { useFonts } from 'expo-font';
 import React, { useState, useEffect } from 'react';
 import Calendar from '../../components/Calendar';
 import ActivityList from '../../components/ActivityList';
 import { useHomeState } from '../../context/HomeContext';
+import { useUtilState } from '../../context/UtilContext';
 import { useAppState } from '../../context/AppContext';
 import axios from 'axios';
 import config from '../../../config.json';
@@ -15,7 +16,7 @@ const HomeCalendar = ({ navigation, route }) => {
     'Logo': require('../../../assets/fonts/OnelySans.ttf')
   });
 
-  const props = { ...useAppState(), ...useHomeState(), ...route.params };
+  const props = { ...useUtilState(), ...useAppState(), ...useHomeState(), ...route.params };
   // state
   const [loading, setLoading] = useState(true);
 
@@ -52,8 +53,34 @@ const HomeCalendar = ({ navigation, route }) => {
     }
   }, [route]);
 
+  // reload data
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      // load activities
+      const activitiesRes = await axios.get(`${config.api}/access-items`, { params: {
+        table: 'Laijoig-Activities',
+        filter: 'dateRange',
+        id: props.group.id,
+        month: getDateString(props.month).slice(0, 7),
+      }});
+      // load comments
+      const commentsRes = await axios.get(`${config.api}/access-items`, { params: {
+        table: 'Laijoig-Comments',
+        filter: 'date',
+        id: props.group.id,
+        month: getDateString(props.month).slice(0, 7)
+      }});
+      const compatActivities = [ ...props.activities, ...activitiesRes.data ];
+      const compatComments = [ ...props.comments, ...commentsRes.data ];
+      props.setActivities(Array.from(new Set(compatActivities.map(a => a.id))).map(id => compatActivities.find(a => a.id === id)));
+      props.setComments(Array.from(new Set(compatComments.map(t => t.id))).map(id => compatComments.find(t => t.id === id)));
+      setLoading(false);
+    })();
+  }, [props.trigger]);
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, globalStyles.safeArea]}>
       <View style={[styles.logobar, globalStyles.flexRow]}>
         <View style={styles.logoImageContainer}>
           <Image style={styles.logoImage} source={require('../../../assets/images/logo.png')}/>
@@ -66,7 +93,7 @@ const HomeCalendar = ({ navigation, route }) => {
           <ActivityList { ...props } loading={loading} setLoading={setLoading} />
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 
@@ -78,14 +105,13 @@ const styles = StyleSheet.create({
   },
   logobar: {
     width: '100%',
-    height: 80,
+    height: 56,
     marginLeft: 16,
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
   logoImageContainer: {
     height: 26,
     aspectRatio: '1/1',
-    marginBottom: 16,
     marginRight: 12,
   },
   logoImage: {
@@ -95,7 +121,6 @@ const styles = StyleSheet.create({
   logoText: {
     color: globalStyles.colors.primary,
     fontSize: 24,
-    marginBottom: 16,
   },
   shadowContainer: {
     flex: 1,
@@ -111,6 +136,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     elevation: 3,
+    flex: 1,
   }
 });
 
