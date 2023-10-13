@@ -25,21 +25,27 @@ import { ChatStateProvider } from "../context/ChatContext";
 import GroupsList from "./Chat/GroupsList";
 import ChatRoom from "./Chat/ChatRoom";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import FullCalendar from "./Home/FullCalendar";
+import FullCalendarDay from "./Home/FullCalendarDay";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 // home screen
-const Home = () => {
+const Home = ({ navigation, route }) => {
+
+  const props = useAppState();
 
   return (
     <HomeStateProvider>
-      <Stack.Navigator initialRouteName='HomeCalendar' screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName={props.preference?.calendarFormat === 'standard' ? 'HomeCalendar' : 'FullCalendar'} screenOptions={{ headerShown: false }}>
         <Stack.Screen name='HomeCalendar' component={HomeCalendar} />
         <Stack.Screen name='CreateActivity' component={CreateActivity} />
         <Stack.Screen name='EditActivity' component={EditActivity}/>
         <Stack.Screen name="Comments" component={Comments} />
         <Stack.Screen name="ProfileBrief" component={ProfileBrief} />
+        <Stack.Screen name='FullCalendar' component={FullCalendar} />
+        <Stack.Screen name='FullCalendarDay' component={FullCalendarDay} />
       </Stack.Navigator>
     </HomeStateProvider>
   )
@@ -134,6 +140,18 @@ const Main = ({ navigation, route }) => {
     navigation.replace('Splash');
   }
 
+  // click home button
+  const handleClickHome = () => {
+    const time = new Date().getTime();
+    if (props.lastClickTime) {
+      const delta = time - props.lastClickTime;
+      props.setIsDoubleClick(delta < 300); // is double click
+      props.setLastClickTime(null);
+    }
+    props.setTrigger(!props.trigger);
+    props.setLastClickTime(time);
+  }
+
   return (
     <Tab.Navigator screenOptions={{
       headerShown: false,
@@ -149,7 +167,7 @@ const Main = ({ navigation, route }) => {
           <Icon name="home" size={26} color={focused ? globalStyles.colors.primary : '#000'} />
         ),
       }} listeners={({ navigation, route }) => ({
-        tabPress: () => props.setTrigger(!props.trigger)
+        tabPress: () => handleClickHome()
       })} />
       {/* chat */}
       {/* <Tab.Screen name="Chat" component={Chat} options={{

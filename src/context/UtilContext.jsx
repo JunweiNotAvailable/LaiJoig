@@ -7,10 +7,14 @@ const UtilStateContext = createContext();
 export const UtilStateProvider = ({ children }) => {
 
   const [trigger, setTrigger] = useState(false);
+  const [lastClickTime, setLastClickTime] = useState(null);
+  const [isDoubleClick, setIsDoubleClick] = useState(false);
 
   return (
     <UtilStateContext.Provider value={{
       trigger, setTrigger,
+      lastClickTime, setLastClickTime,
+      isDoubleClick, setIsDoubleClick,
     }}>
       {children}
     </UtilStateContext.Provider>

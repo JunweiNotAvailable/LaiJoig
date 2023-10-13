@@ -14,6 +14,10 @@ const Preference = ({ navigation, route }) => {
   const props = { ...useAppState(), ...useProfileState(), ...route.params };
 
   // values
+  const calendarFormats = [
+    { name: '標準', type: 'standard' },
+    { name: '全螢幕', type: 'full' },
+  ];
   const loadingIcons = [
     { name: '一般', type: 'normal' },
     { name: '排球', type: 'volleyball' },
@@ -23,9 +27,15 @@ const Preference = ({ navigation, route }) => {
     { name: '彩色', type: 'colorful' },
   ]
   // states
+  const [calendarFormat, setCalendarFormat] = useState(props.preference.calendarFormat || 'standard');
   const [loadingIcon, setLoadingIcon] = useState(props.preference.loadingIcon || 'normal');
   const [chatTheme, setChatTheme] = useState(props.preference.chatTheme || 'normal');
 
+  const saveCalendarFormat = async (type) => {
+    setCalendarFormat(type);
+    props.setPreference({ ...props.preference, calendarFormat: type });
+    await AsyncStorage.setItem('calendarFormat', type);
+  }
   const saveLoadingIcon = async (type) => {
     setLoadingIcon(type);
     props.setPreference({ ...props.preference, loadingIcon: type });
@@ -43,7 +53,24 @@ const Preference = ({ navigation, route }) => {
       <ScrollView style={[globalStyles.flex1, styles.body]}>
         <Pressable>
 
+          {/* calendar format */}
+          {/* <Text style={styles.subtitle}>日曆形式</Text>
+          {calendarFormats.map((item, i) => {
+            return (
+              <Button icon={<View style={[styles.checkboxGroup, globalStyles.flexRow, globalStyles.justifyContent.spaceBetween, globalStyles.alignItems.center]}>
+                <View style={[globalStyles.flexRow, globalStyles.alignItems.center]}>
+                  <View style={[styles.checkbox, calendarFormat === item.type ? styles.checked : {}]}>
+                    <Icon name='check' size={10} color={'#fff'}/>
+                  </View>
+                  <Text style={styles.checkboxText}>{item.name}</Text>
+                </View>
+                <Loading size={24} type={item.type}/>
+              </View>} onPress={async () => await saveCalendarFormat(item.type)}/>
+            )
+          })} */}
+
           {/* loading */}
+          <View style={styles.marginTop}/>
           <Text style={styles.subtitle}>載入圖案</Text>
           {loadingIcons.map((icon, i) => {
             return (

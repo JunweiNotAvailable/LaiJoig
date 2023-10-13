@@ -113,6 +113,7 @@ export const AppStateProvider = ({ children }) => {
       setPreference({
         loadingIcon: await AsyncStorage.getItem('loadingIcon') || 'normal',
         chatTheme: await AsyncStorage.getItem('chatTheme') || 'normal',
+        calendarFormat: await AsyncStorage.getItem('calendarFormat') || 'standard',
       });
       // notificaitons
       const data = (await axios.get(`${config.api}/access-items`, {params: {

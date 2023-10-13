@@ -1,6 +1,6 @@
-import { View, Text, Image, ScrollView, Pressable, StyleSheet, SafeAreaView } from 'react-native'
+import { View, Text, Image, StyleSheet, SafeAreaView, FlatList, Dimensions } from 'react-native'
 import { useFonts } from 'expo-font';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Calendar from '../../components/Calendar';
 import ActivityList from '../../components/ActivityList';
 import { useHomeState } from '../../context/HomeContext';
@@ -11,14 +11,46 @@ import config from '../../../config.json';
 import { getDateString } from '../../utils/Functions';
 import { globalStyles } from '../../utils/Constants';
 
+const screenWidth = Dimensions.get('screen').width;
+
 const HomeCalendar = ({ navigation, route }) => {
   let [fontsLoaded] = useFonts({
     'Logo': require('../../../assets/fonts/OnelySans.ttf')
   });
 
+  const flatListRef = useRef(null);
   const props = { ...useUtilState(), ...useAppState(), ...useHomeState(), ...route.params };
+  const [calendarData, setCalendarData] = useState([]);
   // state
   const [loading, setLoading] = useState(true);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+
+  // initial calendar data
+  useEffect(() => {
+    const calendarData = [];
+    const currentDate = new Date(props.month);
+    for (let i = -1; i <= 1; i++) {
+      const date = new Date(props.month);
+      date.setMonth(currentDate.getMonth() + i);
+      calendarData.push({ key: i, date: date });
+    }
+    setCalendarData(calendarData);
+  }, []);
+
+  useEffect(() => {
+    if (calendarData.length > 2) {
+      flatListRef.current.scrollToIndex({ index: 1, animated: false })
+    }
+  }, [calendarData]);
+
+  // go to full calendar mode
+  useEffect(() => {
+    if (props.isDoubleClick) {
+      console.log('double click')
+      props.setIsDoubleClick(false);
+      navigation.replace('FullCalendar');
+    }
+  }, [props.isDoubleClick]);
 
   // initial load activities
   useEffect(() => {
@@ -45,6 +77,7 @@ const HomeCalendar = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
+    // handle data
     if (route?.params?.date) {
       props.setSelectedDate(route.params.date);
     }
@@ -78,6 +111,34 @@ const HomeCalendar = ({ navigation, route }) => {
       setLoading(false);
     })();
   }, [props.trigger]);
+  
+  const handleScroll = (e) => {
+    const x = e.nativeEvent.contentOffset.x;
+    if (x % screenWidth !== 0 || !scrollEnabled) return;
+    const newData = [...calendarData];
+    setScrollEnabled(false);
+    setTimeout(() => setScrollEnabled(true), 100);
+    if (x <= 0) {
+      const date = new Date(newData[0].date);
+      date.setMonth(date.getMonth() - 1);
+      newData.unshift({ key: newData[0].key - 1, date: date });
+      newData.pop();
+      props.setMonth(newData[1].date);
+    } else if (x >= screenWidth * 2) {
+      const date = new Date(newData[2].date);
+      date.setMonth(date.getMonth() + 1);
+      newData.push({ key: newData[2].key + 1, date: date });
+      newData.shift();
+      props.setMonth(newData[1].date);
+    }
+    setCalendarData(newData);
+  }
+
+  const renderCalendar = ({ item }) => (
+    <View style={styles.calendarContainer}>
+      <Calendar { ...props } loading={loading} setLoading={setLoading} month={item.date}/>
+    </View>
+  )
 
   return (
     <SafeAreaView style={[styles.container, globalStyles.safeArea]}>
@@ -89,7 +150,23 @@ const HomeCalendar = ({ navigation, route }) => {
       </View>
       <View style={styles.shadowContainer}>
         <View style={styles.body}>
-          <Calendar { ...props } loading={loading} setLoading={setLoading} />
+          <FlatList
+            ref={flatListRef}
+            style={styles.flatList}
+            data={calendarData}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            onContentSizeChange={() => {
+              flatListRef.current.scrollToIndex({ index: 1, animated: false })
+            }}
+            onScrollToIndexFailed={() => {}}
+            decelerationRate="fast"
+            snapToAlignment="start"
+            snapToInterval={screenWidth}
+            keyExtractor={item => item.key.toString()}
+            renderItem={renderCalendar}
+            onScroll={handleScroll}
+          />
           <ActivityList { ...props } loading={loading} setLoading={setLoading} />
         </View>
       </View>
@@ -137,6 +214,13 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     elevation: 3,
     flex: 1,
+  },
+  flatList: {
+    flexGrow: 0
+  },
+  calendarContainer: {
+    width: screenWidth,
+    flexGrow: 1,
   }
 });
 

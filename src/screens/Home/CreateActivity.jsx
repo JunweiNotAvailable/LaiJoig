@@ -244,7 +244,7 @@ const CreateActivity = () => {
                 </View>} onPress={() => setHasNotification(!hasNotification)}/>
 
                 {/* invite people */}
-                <Text style={[styles.subtitle, { marginTop: 16 }]}>邀請 ( {invitingUsers.length} )</Text>
+                {/* <Text style={[styles.subtitle, { marginTop: 16 }]}>邀請 ( {invitingUsers.length} )</Text>
                 <View style={[globalStyles.flexRow]}>
                   <Button text='邀請所有人' style={styles.allDayButton} textStyle={styles.allDayText}
                     onPress={() => setInvitingUsers(props.users.filter(u => u.id !== props.user.id).map(u => u.id))}
@@ -275,7 +275,7 @@ const CreateActivity = () => {
                       )
                     })}
                   </Pressable>
-                </ScrollView>
+                </ScrollView> */}
                 
                 {/* margin bottom */}
                 <View style={{ marginBottom: 76 }}/>

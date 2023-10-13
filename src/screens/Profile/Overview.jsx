@@ -254,7 +254,7 @@ const Overview = ({ navigation, route }) => {
             </ScrollView> */}
             <View style={[globalStyles.flexRow, styles.groupsList]}>
               <Button text={'行程'} style={[styles.groupButton, showingInfo === 'schedule' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('schedule')}/>
-              <Button text={'邀請'} style={[styles.groupButton, showingInfo === 'invitations' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('invitations')}/>
+              {/* <Button text={'邀請'} style={[styles.groupButton, showingInfo === 'invitations' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('invitations')}/> */}
             </View>
             {/* list */}
             {showingInfo === 'invitations' ? 

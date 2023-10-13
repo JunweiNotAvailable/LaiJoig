@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import Button from './Button';
 import { Entypo } from '@expo/vector-icons';
-import { globalStyles } from '../utils/Constants';
+import { globalStyles, weekDays } from '../utils/Constants';
 import { getDateString, getMonthBoard } from '../utils/Functions';
 import axios from 'axios';
 import config from '../../config.json';
@@ -10,7 +10,7 @@ import config from '../../config.json';
 const Calendar = ( props ) => {
   const now = new Date();
   const nowString = getDateString(now);
-  const selectedString = getDateString(props.selectedDate);
+  const selectedDateString = getDateString(props.selectedDate);
   const [board, setBoard] = useState(getMonthBoard(props.month.getFullYear(), props.month.getMonth() + 1));
   
   useEffect(() => {
@@ -21,28 +21,17 @@ const Calendar = ( props ) => {
     <View style={styles.container}>
       {/* toolbar */}
       <View style={styles.toolbar}>
-        <Button 
-          icon={<Entypo name="chevron-thin-left" size={18} style={styles.toolbarIconStyle}/>}
-          onPress={() => {
-            const newDate = new Date(props.month);
-            newDate.setDate(1);
-            newDate.setMonth(newDate.getMonth() - 1);
-            props.setMonth(newDate);
-          }}
-        />
         <Text style={[globalStyles.bold]}>{getDateString(props.month).slice(0, 7).replace('-', ' / ')}</Text>
-        <Button 
-          icon={<Entypo name="chevron-thin-right" size={18} style={styles.toolbarIconStyle}/>}
-          onPress={() => {
-            const newDate = new Date(props.month);
-            newDate.setDate(1);
-            newDate.setMonth(newDate.getMonth() + 1);
-            props.setMonth(newDate);
-          }}
-        />
       </View>
       {/* board */}
       <View style={styles.board}>
+        <View style={[globalStyles.flexRow]}>
+          {weekDays.map((weekDay, i) => {
+            return (
+              <Text style={[globalStyles.flex1, styles.weekDay]}>{weekDay[1]}</Text>
+            )
+          })}
+        </View>
         {board.map((row, i) => {
           return (
             <View style={[globalStyles.flexRow, styles.row]} key={`row-${i}`}>
@@ -54,7 +43,7 @@ const Calendar = ( props ) => {
                   cell ? 
                   <TouchableWithoutFeedback key={`cell-${i}-${j}`} onPress={() => props.setSelectedDate(cell)}>
                     <View style={styles.cell}>
-                      {selectedString === dateString ? <View style={styles.selected}>
+                      {selectedDateString === dateString ? <View style={styles.selected}>
                         <Text style={[styles.cellText, styles.selectedText]}>{cell.getDate()}</Text>
                         <View style={[styles.dot, { backgroundColor: hasActivity ? globalStyles.colors.green : 'transparent' }]}/>
                       </View>
@@ -81,19 +70,26 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     padding: 8,
+    paddingBottom: 0,
   },
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   toolbarIconStyle: {
     padding: 4,
   },
   board: {
     padding: 8,
+  },
+  weekDay: {
+    fontSize: 10,
+    padding: 3,
+    textAlign: 'center',
+    color: '#666',
   },
   row: {
     width: '100%',
