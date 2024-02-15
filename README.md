@@ -51,7 +51,7 @@ To communicate between the frontend and the cloud, I used services provided by A
 - **Lambda** - Create custom functions to access the database and the S3 bucket
 
 ### 5. Expo Notification
-It took me a long time to solve the **push notification** feature. I eventually implemented it with Expo Nitification provided by [Expo](https://expo.dev)
+It took me a long time to add the **push notification** feature. I eventually implemented it with Expo Nitification provided by [Expo](https://expo.dev)
 
 <img src="https://github.com/JunweiNotAvailable/LaiJoig/assets/89463326/ad28eabe-5ae4-4056-874c-7da6f45e070e" alt="" width="240" >
 
