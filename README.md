@@ -23,7 +23,7 @@ The home page contains a calendar, and a list of events below it.
 
 <img src="https://github.com/JunweiNotAvailable/LaiJoig/assets/89463326/3c9777af-c511-43ac-840c-0cbf772a0d0c" alt="" width="180" >
 <img src="https://github.com/JunweiNotAvailable/LaiJoig/assets/89463326/16361840-d563-4d53-99ed-179fe23ba95c" alt="" width="180" >
-<img src="https://github.com/JunweiNotAvailable/LaiJoig/assets/89463326/3f201a1c-a9bd-48d7-9ed9-73c49e35a582" alt="" width="180" >
+<img src="https://github.com/JunweiNotAvailable/LaiJoig/assets/89463326/cac90a3a-3a83-4ebe-afcb-db5b0ac9bd5b" alt="" width="180" >
 
 ### 3. Notifications page
 At first, there was no **push notification** on this app, this page is to follow the most recent messages or activities
