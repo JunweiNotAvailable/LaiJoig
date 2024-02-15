@@ -59,3 +59,7 @@ It took me a long time to add the **push notification** feature. I eventually im
 A user's information is visible to the app owner, including the password.
 
 Therefore, in one of the lambda function, I **hashed the password** before storing into the database to make sure even the data manager (me) couldn't see the passwords. 
+
+## Why I built it
+
+To know my motivation behind it, go to my personal website: https://junweinotavailable.netlify.app/laijoig
