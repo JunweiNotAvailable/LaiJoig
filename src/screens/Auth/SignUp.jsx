@@ -7,7 +7,7 @@ import { useAppState } from '../../context/AppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
-import config from '../../../config.json';
+import { config } from '../../utils/config';
 import { Entypo } from '@expo/vector-icons';
 import { getDateString, getRandomHexColor, getRandomString, registerForPushNotificationsAsync } from '../../utils/Functions';
 import Loading from '../../components/Loading';
@@ -35,23 +35,19 @@ const SignUp = ({ navigation }) => {
     setLoading(true);
 
     // // group
-    // const newGroup = {
-    //   id: getRandomString(12),
-    //   name: '我的日曆',
-    //   members: [props.userId],
-    //   iso: new Date().toISOString(),
-    //   lastSender: '',
-    //   lastMessage: '',
-    //   lastTime: '',
-    //   url: '',
-    // };
-    let newGroup = (await axios.get(`${config.api}/access-item`, {params: {
-      table: 'Laijoig-Groups',
-      id: 'first-group'
-    }})).data.Item;
+    let newGroup = {
+      id: getRandomString(12),
+      name: '我的日曆',
+      members: [props.userId],
+      iso: new Date().toISOString(),
+      lastSender: '',
+      lastMessage: '',
+      lastTime: '',
+      url: '',
+    };
     newGroup = { ...newGroup, members: [...newGroup.members, props.userId] };
 
-    const hash = (await axios.get(`${config.api}/auth-access`, {params: {
+    const hash = (await axios.get(`${config.api.general}/auth-access`, {params: {
       action: 'generate',
       password: password,
       hash: '',
@@ -80,11 +76,11 @@ const SignUp = ({ navigation }) => {
     navigation.replace('Main');
 
     // store to database
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Groups',
       data: newGroup
     });
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Users',
       data: newUser
     });

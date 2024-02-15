@@ -1,7 +1,6 @@
 import axios from "axios";
-import config from '../../config.json';
+import { config } from '../utils/config';
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
 import { useEffect, useRef } from 'react';
 
 // get month board by given year and month
@@ -60,7 +59,7 @@ export const getTimeFromMinutes = (min) => {
 // convert 24 format to 12 format
 export const to12HourFormat = (time24) => {
   const [hours, minutes] = time24.split(':').map(Number);
-  const period = hours >= 12 ? 
+  const period = hours >= 12 ?
     hours > 18 ? '晚上' : '下午'
     : hours < 6 ? '凌晨' : '早上';
   const hours12 = (hours % 12 || 12).toString();
@@ -73,7 +72,7 @@ export const getRandomHexColor = () => `#${Math.floor(Math.random() * 16777216).
 // generate random string with given length
 export const getRandomString = (length) => {
   return Array.from({ length: length }, () =>
-      Math.random().toString(36).charAt(2)
+    Math.random().toString(36).charAt(2)
   ).join('');
 }
 
@@ -190,10 +189,10 @@ export const getAllMonthsBetween = (startDate, endDate) => {
 export const getMonthDifference = (startDate, endDate) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
+
   const months = (end.getFullYear() - start.getFullYear()) * 12;
   const monthDiff = end.getMonth() - start.getMonth();
-  
+
   return months + monthDiff;
 }
 
@@ -201,10 +200,10 @@ export const getMonthDifference = (startDate, endDate) => {
 export const getYearDifference = (startDate, endDate) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
+
   const months = (end.getFullYear() - start.getFullYear()) * 12;
   const monthDiff = end.getMonth() - start.getMonth();
-  
+
   return months + monthDiff;
 }
 
@@ -223,16 +222,16 @@ export const getDateStringsBetween = (startDateStr, endDateStr) => {
 // get extension from filename
 export const getExtension = (filename) => {
   const extensionIndex = filename.lastIndexOf('.');
-    if (extensionIndex === -1) {
-      return '';
-    }
-    return filename.substring(extensionIndex);
+  if (extensionIndex === -1) {
+    return '';
+  }
+  return filename.substring(extensionIndex);
 }
 
 // upload images to s3
 export const uploadImage = async (bucketName, imageName, url) => {
   const imageBase64 = url.split(',')[1];
-  await axios.post(`${config.s3}/access-image`, {
+  await axios.post(`${config.api.s3}/access-image`, {
     bucketName: bucketName,
     name: imageName,
     image: imageBase64,
@@ -243,7 +242,7 @@ export const uploadImage = async (bucketName, imageName, url) => {
 export const getImageUrl = async (bucketName, filename) => {
   if (!filename) return '';
   try {
-    const response = await axios.get(`${config.s3}/access-image?bucketName=${bucketName}&fileName=${filename}`);
+    const response = await axios.get(`${config.api.s3}/access-image?bucketName=${bucketName}&fileName=${filename}`);
     return 'data:image/jpeg;base64,' + response.data;
   } catch (error) {
     return '';

@@ -1,12 +1,12 @@
 import { TextInput, Pressable, KeyboardAvoidingView, ScrollView, View, Text, SafeAreaView, StyleSheet, Keyboard, TouchableWithoutFeedback } from 'react-native'
 import React, { useState } from 'react'
 import { globalStyles } from '../../utils/Constants'
-import Toolbar from '../../components/Toolbar'
+import Toolbar from '../../components/TopbarWithGoBack'
 import { useAppState } from '../../context/AppContext'
 import { useProfileState } from '../../context/ProfileContext'
 import Button from '../../components/Button'
 import axios from 'axios'
-import config from '../../../config.json'
+import { config } from '../../utils/config'
 import Loading from '../../components/Loading'
 
 const ProfileSettings = () => {
@@ -29,7 +29,7 @@ const ProfileSettings = () => {
       aboutMe: aboutMe,
     };
     props.setUser(newUser);
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Users',
       data: newUser
     });
@@ -40,23 +40,23 @@ const ProfileSettings = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={[styles.container, globalStyles.safeArea]}>
         <KeyboardAvoidingView style={[globalStyles.flex1]} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
-          <Toolbar text='個人檔案'/>
+          <Toolbar text='個人檔案' />
           <ScrollView style={[globalStyles.flex1]}>
             <Pressable>
               <View style={[styles.inputGroup, globalStyles.flexRow, globalStyles.alignItems.center]}>
                 <Text style={styles.label}>名稱</Text>
-                <TextInput style={[styles.input, focusing === 'username' ? styles.focus : {}]} onBlur={() => setFocusing('')} onFocus={() => setFocusing('username')} placeholder='名稱' value={username} onChangeText={text => setUsername(text)} numberOfLines={1}/>
+                <TextInput style={[styles.input, focusing === 'username' ? styles.focus : {}]} onBlur={() => setFocusing('')} onFocus={() => setFocusing('username')} placeholder='名稱' value={username} onChangeText={text => setUsername(text)} numberOfLines={1} />
               </View>
               <View style={[styles.inputGroup, globalStyles.flexRow, globalStyles.alignItems.center]}>
                 <Text style={styles.label}>標題</Text>
-                <TextInput style={[styles.input, focusing === 'title' ? styles.focus : {}]} onBlur={() => setFocusing('')} onFocus={() => setFocusing('title')} placeholder='標題' value={title} onChangeText={text => setTitle(text)} numberOfLines={1}/>
+                <TextInput style={[styles.input, focusing === 'title' ? styles.focus : {}]} onBlur={() => setFocusing('')} onFocus={() => setFocusing('title')} placeholder='標題' value={title} onChangeText={text => setTitle(text)} numberOfLines={1} />
               </View>
               <View style={[styles.inputGroup, globalStyles.flexRow, globalStyles.alignItems.center]}>
                 <Text style={styles.label}>簡介</Text>
-                <TextInput style={[styles.input, focusing === 'aboutMe' ? styles.focus : {}]} onBlur={() => setFocusing('')} onFocus={() => setFocusing('aboutMe')} placeholder={title} value={aboutMe} onChangeText={text => setAboutMe(text)} multiline/>
+                <TextInput style={[styles.input, focusing === 'aboutMe' ? styles.focus : {}]} onBlur={() => setFocusing('')} onFocus={() => setFocusing('aboutMe')} placeholder={title} value={aboutMe} onChangeText={text => setAboutMe(text)} multiline />
               </View>
               <View style={[globalStyles.alignItems.center]}>
-                <Button onPress={saveChanges} icon={loading ? <Loading size={17} color={'#fff'}/> : <Text style={styles.buttonText}>儲存</Text>} style={styles.saveButton}/>
+                <Button onPress={saveChanges} icon={loading ? <Loading size={17} color={'#fff'} /> : <Text style={styles.buttonText}>儲存</Text>} style={styles.saveButton} />
               </View>
             </Pressable>
           </ScrollView>

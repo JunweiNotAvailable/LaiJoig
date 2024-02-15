@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable } from 'react-native'
 import React from 'react';
 import { globalStyles } from '../../utils/Constants';
-import Toolbar from '../../components/Toolbar';
+import TopbarWithGoBack from '../../components/TopbarWithGoBack';
 import Button from '../../components/Button';
 import { useAppState } from '../../context/AppContext';
 import { useProfileState } from '../../context/ProfileContext';
@@ -30,7 +30,7 @@ const Settings = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={[styles.container, globalStyles.safeArea]}>
-      <Toolbar text={props.user.id}/>
+      <TopbarWithGoBack text={props.user.id}/>
       <ScrollView style={[globalStyles.flex1, styles.body]}>
         {options.map((option, i) => {
           return (

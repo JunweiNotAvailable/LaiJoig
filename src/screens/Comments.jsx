@@ -3,12 +3,12 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useHomeState } from '../context/HomeContext'
 import { useAppState } from '../context/AppContext';
 import { globalStyles, weekDays } from '../utils/Constants';
-import Toolbar from '../components/Toolbar';
+import Toolbar from '../components/TopbarWithGoBack';
 import Activitiy from '../components/Activitiy';
 import { getDateString, getTimeFromNow, getRandomString, sendPushNotification } from '../utils/Functions';
 import Button from '../components/Button';
 import axios from 'axios';
-import config from '../../config.json';
+import { config } from '../utils/config';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
 const Comments = ({ navigation, route }) => {
@@ -98,17 +98,17 @@ const Comments = ({ navigation, route }) => {
     props.setComments([...props.comments, newComment]);
     setMessage('');
     // save to database
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Comments',
       data: newComment
     });
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Notifications',
       data: notification
     });
     
     // push notifications to all users
-    for (const u of props.users) {
+    for (const u of props.users.filter(u => props.group.members.includes(u.id))) {
       if (u.id === props.user.id) continue;
       await sendPushNotification(
         u.deviceToken,

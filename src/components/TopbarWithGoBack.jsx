@@ -5,7 +5,7 @@ import Button from './Button';
 import { Entypo } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-const Toolbar = ({ text }) => {
+const TopbarWithGoBack = ({ text }) => {
   const navigation = useNavigation();
   return (
     <View style={[styles.container, globalStyles.flexRow, globalStyles.alignItems.center]}>
@@ -27,4 +27,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Toolbar
+export default TopbarWithGoBack

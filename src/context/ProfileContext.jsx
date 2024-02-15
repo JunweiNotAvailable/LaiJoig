@@ -7,8 +7,6 @@ const ProfileStateContext = createContext();
 // Create a provider component
 export const ProfileStateProvider = ({ children }) => {
 
-  
-
   return (
     <ProfileStateContext.Provider value={{
       

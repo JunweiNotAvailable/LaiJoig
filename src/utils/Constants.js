@@ -45,8 +45,6 @@ export const urls = {
   logo: require('../../assets/images/logo.png'),
   user: require('../../assets/images/user.png'),
   userSelected: require('../../assets/images/user-selected.png'),
-  chat: require('../../assets/images/chat.png'),
-  chatSelected: require('../../assets/images/chat-selected.png'),
   bell: require('../../assets/images/bell.png'),
   bellSelected: require('../../assets/images/bell-selected.png'),
   settings: require('../../assets/images/settings.png'),

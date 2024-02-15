@@ -1,8 +1,7 @@
-import React, { useImperativeHandle, forwardRef, useEffect } from "react";
+import React, { useEffect } from "react";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { HomeCalendar, CreateActivity } from "../../src";
-import { Entypo } from "@expo/vector-icons";
+import { Schedule, CreateActivity } from "../../src";
 import { View, StyleSheet, Image, Platform } from "react-native";
 import { globalStyles, urls } from "../../src/utils/Constants";
 import { HomeStateProvider } from "../../src/context/HomeContext";
@@ -18,15 +17,11 @@ import ProfileSettings from "./Profile/ProfileSettings";
 import NotificationsScreen from "./Profile/Notifications";
 import Account from "./Profile/Account";
 import Preference from "./Profile/Preference";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import ProfileBrief from "./ProfileBrief";
 import EditActivity from "./Home/EditActivity";
-import { ChatStateProvider } from "../context/ChatContext";
-import GroupsList from "./Chat/GroupsList";
-import ChatRoom from "./Chat/ChatRoom";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import FullCalendar from "./Home/FullCalendar";
-import FullCalendarDay from "./Home/FullCalendarDay";
+import FullScreenCalendar from "./Home/FullScreenCalendar";
+import FullScreenCalendarDay from "./Home/FullScreenCalendarDay";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -34,39 +29,18 @@ const Stack = createNativeStackNavigator();
 // home screen
 const Home = ({ navigation, route }) => {
 
-  const props = useAppState();
-
   return (
     <HomeStateProvider>
-      <Stack.Navigator initialRouteName={props.preference?.calendarFormat === 'standard' ? 'HomeCalendar' : 'FullCalendar'} screenOptions={{ headerShown: false }}>
-        <Stack.Screen name='HomeCalendar' component={HomeCalendar} />
+      <Stack.Navigator initialRouteName={'Schedule'} screenOptions={{ headerShown: false }}>
+        <Stack.Screen name='Schedule' component={Schedule} />
         <Stack.Screen name='CreateActivity' component={CreateActivity} />
         <Stack.Screen name='EditActivity' component={EditActivity}/>
         <Stack.Screen name="Comments" component={Comments} />
         <Stack.Screen name="ProfileBrief" component={ProfileBrief} />
-        <Stack.Screen name='FullCalendar' component={FullCalendar} />
-        <Stack.Screen name='FullCalendarDay' component={FullCalendarDay} />
+        <Stack.Screen name='FullScreenCalendar' component={FullScreenCalendar} />
+        <Stack.Screen name='FullScreenCalendarDay' component={FullScreenCalendarDay} />
       </Stack.Navigator>
     </HomeStateProvider>
-  )
-}
-
-// chat screen
-const Chat = () => {
-  return (
-    <ChatStateProvider>
-      <Stack.Navigator initialRouteName="ChatRoom" screenOptions={{ headerShown: false }}>
-        {/* <Stack.Screen name="GroupsList" component={GroupsList}/> */}
-        <Stack.Screen name="ChatRoom" component={ChatRoom}/>
-      </Stack.Navigator>
-    </ChatStateProvider>
-  )
-}
-
-// search screen
-const Search = () => {
-  return (
-    <></>
   )
 }
 
@@ -169,17 +143,7 @@ const Main = ({ navigation, route }) => {
       }} listeners={({ navigation, route }) => ({
         tabPress: () => handleClickHome()
       })} />
-      {/* chat */}
-      {/* <Tab.Screen name="Chat" component={Chat} options={{
-        tabBarIcon: ({ focused }) => (
-          <View style={styles.iconStyle}>
-            <Image source={focused ? urls.chatSelected : urls.chat} style={styles.imageStyle} />
-          </View>
-        ),
-      }} listeners={({ navigation, route }) => ({
-        tabPress: () => props.setTrigger(!props.trigger)
-      })} /> */}
-      {/* notifications (v2. Posts) */}
+      {/* notifications */}
       <Tab.Screen name="Notifications" component={Notifications} options={{
         tabBarIcon: ({ focused }) => (
           <View style={styles.iconStyle}>
@@ -189,12 +153,6 @@ const Main = ({ navigation, route }) => {
       }} listeners={({ navigation, route }) => ({
         tabPress: () => props.setTrigger(!props.trigger)
       })} />
-      {/* search */}
-      {/* <Tab.Screen name="Search" component={Search} options={{
-        tabBarIcon: ({ focused }) => (
-          <Entypo name="magnifying-glass" size={24} color={focused ? globalStyles.colors.primary : '#000'} />
-        ),
-      }} /> */}
       {/* profile */}
       <Tab.Screen name="Profile" component={Profile} initialParams={{ toSplash: toSplash }} options={{
         tabBarIcon: ({ focused }) => (

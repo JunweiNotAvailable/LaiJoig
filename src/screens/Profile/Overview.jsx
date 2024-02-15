@@ -10,7 +10,7 @@ import FeatherIcon from 'react-native-vector-icons/Feather';
 import * as ImagePicker from 'expo-image-picker';
 import { getAllMonthsBetween, getDateString, getDateStringsBetween, getTimeString, schedulePushNotification, sendPushNotification, to12HourFormat, uploadImage } from '../../utils/Functions';
 import axios from 'axios';
-import config from '../../../config.json';
+import { config } from '../../utils/config';
 import Activitiy from '../../components/Activitiy';
 import Loading from '../../components/Loading';
 
@@ -56,24 +56,28 @@ const Overview = ({ navigation, route }) => {
       let newActivities = [];
       let newComments = [];
       for (const m of allMonths) {
-        if (m < nowString) continue; 
+        if (m < nowString) continue;
         // load activities
-        const activitiesRes = await axios.get(`${config.api}/access-items`, { params: {
-          table: 'Laijoig-Activities',
-          filter: 'dateRange',
-          id: props.group.id,
-          month: m,
-        }});
+        const activitiesRes = await axios.get(`${config.api.general}/access-items`, {
+          params: {
+            table: 'Laijoig-Activities',
+            filter: 'dateRange',
+            id: props.group.id,
+            month: m,
+          }
+        });
         // load comments
-        const commentsRes = await axios.get(`${config.api}/access-items`, { params: {
-          table: 'Laijoig-Comments',
-          filter: 'date',
-          id: props.group.id,
-          month: m
-        }});
+        const commentsRes = await axios.get(`${config.api.general}/access-items`, {
+          params: {
+            table: 'Laijoig-Comments',
+            filter: 'date',
+            id: props.group.id,
+            month: m
+          }
+        });
         // update
-        newActivities = [ ...newActivities, ...activitiesRes.data ].filter(a => a.userId === props.user.id);
-        newComments = [ ...newComments, ...commentsRes.data ];
+        newActivities = [...newActivities, ...activitiesRes.data].filter(a => a.userId === props.user.id);
+        newComments = [...newComments, ...commentsRes.data];
       }
       setActivities(Array.from(new Set(newActivities.map(a => a.id))).map(id => newActivities.find(a => a.id === id)));
       setComments(Array.from(new Set(newComments.map(t => t.id))).map(id => newComments.find(t => t.id === id)));
@@ -92,10 +96,10 @@ const Overview = ({ navigation, route }) => {
       for (const d of allDates) {
         const custom = activity.custom[d];
         if (custom?.delete) continue;
-        const newActivity = { 
-          ...activity, 
-          startDateString: d, 
-          endDateString: d, 
+        const newActivity = {
+          ...activity,
+          startDateString: d,
+          endDateString: d,
           iso: custom?.iso || activity.iso,
           startTime: custom?.startTime || activity.startTime,
           endTime: custom?.endTime || activity.endTime,
@@ -142,7 +146,7 @@ const Overview = ({ navigation, route }) => {
       props.setUrls({ ...props.urls, [props.user.id]: url });
       // upload to database
       const newUser = { ...props.user, url: `${props.user.id}.${extension}` };
-      await axios.post(`${config.api}/access-item`, { table: 'Laijoig-Users', data: newUser });
+      await axios.post(`${config.api.general}/access-item`, { table: 'Laijoig-Users', data: newUser });
       await uploadImage('laijoig-bucket', `${props.user.id}.${extension}`, url);
     }
   }
@@ -150,14 +154,14 @@ const Overview = ({ navigation, route }) => {
   // reject invitation
   const rejectActivity = async () => {
     const activity = { ...answeringActivity };
-    const newInvitations = { 
-      ...props.invitations, 
-      invitations: props.invitations.invitations.filter(i => i.activityId !== activity.id) 
+    const newInvitations = {
+      ...props.invitations,
+      invitations: props.invitations.invitations.filter(i => i.activityId !== activity.id)
     };
     props.setInvitations(newInvitations);
     props.setInvitingActivities(props.invitingActivities.filter(a => a.id !== activity.id));
     setAnswering(-1);
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Invitations',
       data: newInvitations,
     });
@@ -182,26 +186,26 @@ const Overview = ({ navigation, route }) => {
       notificationIds.push({ dateString: d, id: notificationId });
     }
     // become a partner
-    activity = { 
+    activity = {
       ...activity,
       partners: [
-        ...activity.partners, 
+        ...activity.partners,
         { userId: props.user.id, notificationIds: notificationIds },
       ],
     };
     // remove invitation from database
-    const newInvitations = { 
-      ...props.invitations, 
-      invitations: props.invitations.invitations.filter(i => i.activityId !== activity.id) 
+    const newInvitations = {
+      ...props.invitations,
+      invitations: props.invitations.invitations.filter(i => i.activityId !== activity.id)
     };
     props.setInvitations(newInvitations);
     props.setInvitingActivities(props.invitingActivities.filter(a => a.id !== activity.id));
     setAnswering(-1);
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Invitations',
       data: newInvitations,
     });
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Activities',
       data: activity
     });
@@ -220,7 +224,7 @@ const Overview = ({ navigation, route }) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={[globalStyles.safeArea, globalStyles.flex1]}>
           <View style={[styles.topRow, globalStyles.flexRow, globalStyles.alignItems.center, globalStyles.justifyContent.flexEnd]}>
-            <Button icon={<Icon name='menu-outline' style={styles.menuIcon}/>} onPress={() => navigation.navigate('Settings')}/>
+            <Button icon={<Icon name='menu-outline' style={styles.menuIcon} />} onPress={() => navigation.navigate('Settings')} />
           </View>
           <View style={[styles.body, globalStyles.flex1]}>
             {/* profile view */}
@@ -229,7 +233,7 @@ const Overview = ({ navigation, route }) => {
               <View style={[styles.userInfoRow, globalStyles.flexRow, globalStyles.alignItems.center]}>
                 <TouchableWithoutFeedback onPress={() => setShowingImage(true)}>
                   <View style={[styles.avatar, globalStyles.flexCenter, { backgroundColor: props.user.color }]}>
-                    {url ? <Image style={styles.avatarImage} source={{ uri: url }}/> : <Text style={styles.avatarText}>{props.user.name[0]}</Text>}
+                    {url ? <Image style={styles.avatarImage} source={{ uri: url }} /> : <Text style={styles.avatarText}>{props.user.name[0]}</Text>}
                   </View>
                 </TouchableWithoutFeedback>
                 <View style={styles.userInfo}>
@@ -242,22 +246,11 @@ const Overview = ({ navigation, route }) => {
                 <Text style={styles.aboutMeText}>{props.user.aboutMe}</Text>
               </View>
             </View>
-            {/* groups list */}
-            {/* <ScrollView horizontal style={[styles.groupsList]}>
-              {props.groups.map((group, i) => {
-                return (
-                  <Pressable key={group.id}>
-                    <Button text={'行程'} style={[styles.groupButton, group.id === selectedGroup ? { borderBottomColor: '#000' } : {}]} onPress={() => setSelectedGroup(group.id)}/>
-                  </Pressable>
-                )
-              })}
-            </ScrollView> */}
             <View style={[globalStyles.flexRow, styles.groupsList]}>
-              <Button text={'行程'} style={[styles.groupButton, showingInfo === 'schedule' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('schedule')}/>
-              {/* <Button text={'邀請'} style={[styles.groupButton, showingInfo === 'invitations' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('invitations')}/> */}
+              <Button text={'行程'} style={[styles.groupButton, showingInfo === 'schedule' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('schedule')} />
             </View>
             {/* list */}
-            {showingInfo === 'invitations' ? 
+            {showingInfo === 'invitations' ?
               props.invitingActivities.length > 0 ? <ScrollView style={[globalStyles.flex1, styles.invitationsList]}>
                 {props.invitingActivities.map((activity, i) => {
                   const sender = props.users.find(u => u.id === activity.userId);
@@ -275,81 +268,81 @@ const Overview = ({ navigation, route }) => {
                   )
                 })}
               </ScrollView>
-              : 
-              // empty
-              <View style={[styles.empty, globalStyles.flexCenter]}>
-                <Text style={styles.emptyText}>沒有邀請</Text>
-              </View>
-            : showingInfo === 'schedule' ?
-              splitedActivities.length > 0 ? <ScrollView style={[globalStyles.flex1, styles.activitiesList]}>
-                {splitedActivities.map((activity, i) => {
-                  const activityProps = {
-                    selectedDate: new Date(activity.startDateString),
-                    comments: comments,
-                  };
-                  return (
-                    <View style={[styles.activityContainer, i === 0 ? { marginTop: 0 } : {}]}>
-                      <Activitiy 
-                        { ...props } 
-                        { ...activityProps } 
-                        activity={activity} 
-                        showDate
-                      />
-                    </View>
-                  )
-                })}
-              </ScrollView>
-              : 
-              // empty
-              <View style={[styles.empty, globalStyles.flexCenter]}>
-                {loading ? <Loading/> : <Text style={styles.emptyText}>沒有行程</Text>}
-              </View>
-            : <></>}
+                :
+                // empty
+                <View style={[styles.empty, globalStyles.flexCenter]}>
+                  <Text style={styles.emptyText}>沒有邀請</Text>
+                </View>
+              : showingInfo === 'schedule' ?
+                splitedActivities.length > 0 ? <ScrollView style={[globalStyles.flex1, styles.activitiesList]}>
+                  {splitedActivities.map((activity, i) => {
+                    const activityProps = {
+                      selectedDate: new Date(activity.startDateString),
+                      comments: comments,
+                    };
+                    return (
+                      <View style={[styles.activityContainer, i === 0 ? { marginTop: 0 } : {}]}>
+                        <Activitiy
+                          {...props}
+                          {...activityProps}
+                          activity={activity}
+                          showDate
+                        />
+                      </View>
+                    )
+                  })}
+                </ScrollView>
+                  :
+                  // empty
+                  <View style={[styles.empty, globalStyles.flexCenter]}>
+                    {loading ? <Loading /> : <Text style={styles.emptyText}>沒有行程</Text>}
+                  </View>
+                : <></>}
           </View>
         </SafeAreaView>
       </TouchableWithoutFeedback>
       {/* show image */}
-      {showingImage && 
-      <TouchableWithoutFeedback onPress={() => handleClick('bg')}>
-        <View style={styles.imageWindow}>
-          <TouchableWithoutFeedback onPress={pickImage}>
-            <View style={[styles.avatar, styles.imageAvatar, globalStyles.flexCenter, { backgroundColor: props.user.color }]}>
-              {url ? <Image style={styles.avatarImage} source={{ uri: url }}/> : <Text style={[styles.avatarText, styles.imageAvatarText]}>{props.user.name[0]}</Text>}
-            </View>
-          </TouchableWithoutFeedback>
-          <Button onPress={pickImage} style={styles.imageButton} textStyle={styles.imageButtonText} icon={<FeatherIcon name='image' size={22}/>} text={'變更照片'}/>
-        </View>
-      </TouchableWithoutFeedback>}
+      {showingImage &&
+        <TouchableWithoutFeedback onPress={() => handleClick('bg')}>
+          <View style={styles.imageWindow}>
+            <TouchableWithoutFeedback onPress={pickImage}>
+              <View style={[styles.avatar, styles.imageAvatar, globalStyles.flexCenter, { backgroundColor: props.user.color }]}>
+                {url ? <Image style={styles.avatarImage} source={{ uri: url }} /> : <Text style={[styles.avatarText, styles.imageAvatarText]}>{props.user.name[0]}</Text>}
+              </View>
+            </TouchableWithoutFeedback>
+            <Button onPress={pickImage} style={styles.imageButton} textStyle={styles.imageButtonText} icon={<FeatherIcon name='image' size={22} />} text={'變更照片'} />
+          </View>
+        </TouchableWithoutFeedback>}
       {/* answer an invitation */}
-      {answeringActivity && 
-      <TouchableWithoutFeedback onPress={() => handleClick('bg')}>
-        <View style={styles.dialogContainer}>
-          <TouchableWithoutFeedback onPress={() => handleClick('window')}>
-            <View style={styles.dialog}>
-              <View style={styles.dialogBody}>
-                <Text style={styles.dialogTitle}>{props.users.find(u => u.id === answeringActivity.userId).name}邀請你參加活動</Text>
-                <Text style={styles.dialogTextSmall}>{answeringActivity.startDateString.replaceAll('-', ' / ')} {weekDays[new Date(answeringActivity.startDateString).getDay()]}{answeringActivity.startDateString === answeringActivity.endDateString ? '' : ` - ${answeringActivity.endDateString.replaceAll('-', ' / ')} ${weekDays[new Date(answeringActivity.endDateString).getDay()]}`}</Text>
-                <Text style={styles.dialogTextSmall}>{to12HourFormat(answeringActivity.startTime)} - {to12HourFormat(answeringActivity.endTime)}</Text>
-                <ScrollView style={styles.dialogTextContainer}>
-                  <Pressable>
-                    <Text style={styles.dialogText}>{answeringActivity.description}</Text>
-                  </Pressable>
-                </ScrollView>
+      {answeringActivity &&
+        <TouchableWithoutFeedback onPress={() => handleClick('bg')}>
+          <View style={styles.dialogContainer}>
+            <TouchableWithoutFeedback onPress={() => handleClick('window')}>
+              <View style={styles.dialog}>
+                <View style={styles.dialogBody}>
+                  <Text style={styles.dialogTitle}>{props.users.find(u => u.id === answeringActivity.userId).name}邀請你參加活動</Text>
+                  <Text style={styles.dialogTextSmall}>{answeringActivity.startDateString.replaceAll('-', ' / ')} {weekDays[new Date(answeringActivity.startDateString).getDay()]}{answeringActivity.startDateString === answeringActivity.endDateString ? '' : ` - ${answeringActivity.endDateString.replaceAll('-', ' / ')} ${weekDays[new Date(answeringActivity.endDateString).getDay()]}`}</Text>
+                  <Text style={styles.dialogTextSmall}>{to12HourFormat(answeringActivity.startTime)} - {to12HourFormat(answeringActivity.endTime)}</Text>
+                  <ScrollView style={styles.dialogTextContainer}>
+                    <Pressable>
+                      <Text style={styles.dialogText}>{answeringActivity.description}</Text>
+                    </Pressable>
+                  </ScrollView>
+                </View>
+                <View style={{ height: .5, backgroundColor: '#ccc' }} />
+                <View style={[globalStyles.flexRow]}>
+                  <Button style={[styles.dialogButton, globalStyles.flex1]} text={'拒絕'} textStyle={{ fontWeight: 'bold', color: globalStyles.colors.red }}
+                    onPress={rejectActivity}
+                  />
+                  <View style={{ width: .5, backgroundColor: '#ccc' }} />
+                  <Button style={[styles.dialogButton, globalStyles.flex1]} text={'參加'} textStyle={{ fontWeight: 'bold', color: globalStyles.colors.green }}
+                    onPress={joinActivity}
+                  />
+                </View>
               </View>
-              <View style={{ height: .5, backgroundColor: '#ccc' }}/>
-              <View style={[globalStyles.flexRow]}>
-                <Button style={[styles.dialogButton, globalStyles.flex1]} text={'拒絕'} textStyle={{ fontWeight: 'bold', color: globalStyles.colors.red }}
-                  onPress={rejectActivity}
-                />
-                <View style={{ width: .5, backgroundColor: '#ccc' }}/>
-                <Button style={[styles.dialogButton, globalStyles.flex1]} text={'參加'} textStyle={{ fontWeight: 'bold', color: globalStyles.colors.green }}
-                  onPress={joinActivity}
-                />
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>}
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>}
     </>
   )
 }
@@ -511,7 +504,7 @@ const styles = StyleSheet.create({
     height: '100%',
     ...globalStyles.flexCenter,
     shadowColor: '#171717',
-    shadowOffset: { width: 0, height: 0},
+    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: .4,
     shadowRadius: 8,
   },

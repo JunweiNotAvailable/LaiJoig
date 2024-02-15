@@ -4,7 +4,7 @@ import { globalStyles } from '../../utils/Constants'
 import Button from '../../components/Button';
 import Icon from 'react-native-vector-icons/FontAwesome5'
 import axios from 'axios';
-import config from '../../../config.json';
+import { config } from '../../utils/config';
 import { useAuthState } from '../../context/AuthContext';
 import Loading from '../../components/Loading';
 
@@ -24,7 +24,7 @@ const SignInUsername = ({ navigation }) => {
     if (!isValid()) return;
     setLoading(true);
 
-    const user = (await axios.get(`${config.api}/access-item`, {params: {
+    const user = (await axios.get(`${config.api.general}/access-item`, {params: {
       table: 'Laijoig-Users',
       id: userId
     }})).data.Item;

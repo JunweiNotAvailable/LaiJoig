@@ -6,10 +6,9 @@ import { useUtilState } from '../../context/UtilContext'
 import { useAppState } from '../../context/AppContext'
 import { useHomeState } from '../../context/HomeContext'
 import Button from '../../components/Button'
-import Icon from 'react-native-vector-icons/Ionicons';
 import { Entypo } from '@expo/vector-icons'
 
-const FullCalendarDay = ({ navigation, route }) => {
+const FullScreenCalendarDay = ({ navigation, route }) => {
 
   const props = { ...useUtilState(), ...useAppState(), ...useHomeState(), ...route.params };
   const dateString = getDateString(props.selectedDate);
@@ -26,7 +25,6 @@ const FullCalendarDay = ({ navigation, route }) => {
         </View>
         <View style={[globalStyles.flexRow, globalStyles.alignItems.center]}>
           <Button text='新增' style={styles.addButton} onPress={() => navigation.navigate('CreateActivity')}/>
-          {/* <Button icon={<Icon size={24} name="menu-outline"/>} style={{ padding: 4 }}/> */}
         </View>
       </View>
       {/* body */}
@@ -195,4 +193,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default FullCalendarDay
+export default FullScreenCalendarDay

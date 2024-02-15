@@ -5,18 +5,15 @@ import { useUtilState } from '../../context/UtilContext';
 import { useAppState } from '../../context/AppContext';
 import { globalStyles, weekDays } from '../../utils/Constants';
 import { getDateString, getMonthBoard } from '../../utils/Functions';
-import Button from '../../components/Button';
-import { Entypo } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 const screenWidth = Dimensions.get('screen').width;
 
-const Calendar = ( props ) => {
+const FullScreenCalendar = ( props ) => {
 
   const navigation = useNavigation();
   const now = new Date();
   const nowString = getDateString(now);
-  const selectedDateString = getDateString(props.selectedDate);
   const [board, setBoard] = useState(getMonthBoard(props.month.getFullYear(), props.month.getMonth() + 1));
   
   return (
@@ -45,7 +42,7 @@ const Calendar = ( props ) => {
                   cell ? 
                   <TouchableWithoutFeedback key={`cell-${i}-${j}`} onPress={() => {
                     props.setSelectedDate(cell);
-                    navigation.navigate('FullCalendarDay');
+                    navigation.navigate('FullScreenDay');
                   }}>
                     <View style={styles.cell}>
                       <Text style={[dateString < nowString ? { color: globalStyles.colors.gray } : {}, styles.cellText]}>{cell.getDate()}</Text>
@@ -86,6 +83,9 @@ const FullCalendar = ({ navigation, route }) => {
     if (props.isDoubleClick) {
       props.setIsDoubleClick(false);
       navigation.replace('HomeCalendar');
+      (async () => {
+        await AsyncStorage.setItem('calendarFormat', 'standard');
+      })();
     }
   }, [props.isDoubleClick]);
 
@@ -218,4 +218,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FullCalendar
+export default FullScreenCalendar

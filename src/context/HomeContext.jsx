@@ -31,14 +31,14 @@ export const HomeStateProvider = ({ children }) => {
     // load data
     async function loadData() {
       // load activities
-      const activitiesRes = await axios.get(`${config.api}/access-items`, { params: {
+      const activitiesRes = await axios.get(`${config.api.general}/access-items`, { params: {
         table: 'Laijoig-Activities',
         filter: 'dateRange',
         id: appProps.group.id,
         month: monthStr,
       }});
       // load comments
-      const commentsRes = await axios.get(`${config.api}/access-items`, { params: {
+      const commentsRes = await axios.get(`${config.api.general}/access-items`, { params: {
         table: 'Laijoig-Comments',
         filter: 'date',
         id: appProps.group.id,

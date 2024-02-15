@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, TouchableWithoutFeedback, View, StyleSheet, SafeAreaView, Text } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { globalStyles } from '../../utils/Constants'
 import Topbar from '../../components/Topbar'
 import axios from 'axios'
@@ -15,9 +15,10 @@ const Notifications = ({ navigation, route }) => {
 
   useEffect(() => {
     (async () => {
-      const data = (await axios.get(`${config.api}/access-items`, {params: {
+      const data = (await axios.get(`${config.api.general}/access-items`, {params: {
         table: 'Laijoig-Notifications',
-        filter: ''
+        filter: 'groupId',
+        id: props.group.id,
       }})).data;
       props.setNotifications(data.sort((a, b) => a.iso < b.iso ? 1 : -1));
     })();
@@ -28,18 +29,18 @@ const Notifications = ({ navigation, route }) => {
   }
 
   const handleClick = async (notification) => {
-    const activity = (await axios.get(`${config.api}/access-item`, { params: {
+    const activity = (await axios.get(`${config.api.general}/access-item`, { params: {
       table: 'Laijoig-Activities',
       id: notification.id.slice(0, notification.id.length - 11),
     }})).data.Item;
-    const comment = (await axios.get(`${config.api}/access-item`, { params: {
+    const comment = (await axios.get(`${config.api.general}/access-item`, { params: {
       table: 'Laijoig-Comments',
       id: notification.commentId,
     }})).data.Item;
     navigation.navigate('HomeCalendar', { date: new Date(comment.dateString), toActivity: activity });
     if (unread(notification)) {
       const newNotification = { ...notification, read: [...notification.read, props.user.id] };
-      await axios.post(`${config.api}/access-item`, {
+      await axios.post(`${config.api.general}/access-item`, {
         table: 'Laijoig-Notifications',
         data: newNotification
       });

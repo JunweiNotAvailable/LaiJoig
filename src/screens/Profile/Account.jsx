@@ -1,25 +1,23 @@
 import { View, TextInput, Text, ScrollView, Pressable, StyleSheet, TouchableWithoutFeedback, SafeAreaView, KeyboardAvoidingView, Keyboard, Platform } from 'react-native'
 import React, { useState, useEffect } from 'react';
 import { globalStyles } from '../../utils/Constants';
-import Toolbar from '../../components/Toolbar';
+import TopbarWithGoBack from '../../components/TopbarWithGoBack';
 import { useAppState } from '../../context/AppContext';
 import { useProfileState } from '../../context/ProfileContext';
 import Button from '../../components/Button';
 import axios from 'axios';
-import config from '../../../config.json';
+import {config} from '../../utils/config';
 import Loading from '../../components/Loading';
 
 const Account = () => {
 
   const props = { ...useAppState(), ...useProfileState() };
-  const [userId, setUserId] = useState(props.user.id);
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [errorMessagePassword, setErrorMessagePassword] = useState('');
   const [focusing, setFocusing] = useState('');
-  const [loading, setLoading] = useState(false);
   const [loadingPassword, setLoadingPassword] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
 
@@ -29,34 +27,6 @@ const Account = () => {
     setNewPasswordConfirm('');
     setErrorMessagePassword('');
   }, [changingPassword]);
-
-  const changeId = async () => {
-    setErrorMessage('');
-    if (userId === props.user.id || userId.length === 0) return;
-    setLoading(true);
-    // check if new id exists
-    const existUser = (await axios.get(`${config.api}/access-item`, {params: {
-      table: 'Laijoig-Users',
-      id: userId,
-    }})).data.Item?.id;
-    if (existUser) {
-      setErrorMessage('ID已經存在');
-      setLoading(false);
-      return;
-    }
-    // delete old user and save the new one
-    const newUser = { ...props.user, id: userId };
-    await axios.delete(`${config.api}/access-item`, {params: {
-      table: 'Laijoig-Users',
-      id: props.user.id
-    }});
-    await axios.post(`${config.api}/access-item`, {
-      table: 'Laijoig-Users',
-      data: newUser
-    });
-    props.setUser(newUser);
-    setLoading(false);
-  }
 
   // click password window
   const handleWindowClick = (item) => {
@@ -80,7 +50,7 @@ const Account = () => {
     if (!validPasswords()) return;
     setLoadingPassword(true);
     // check old password
-    const isMatch = (await axios.get(`${config.api}/auth-access`, {params: {
+    const isMatch = (await axios.get(`${config.api.general}/auth-access`, {params: {
       action: 'compare',
       password: password,
       hash: props.user.password
@@ -91,13 +61,13 @@ const Account = () => {
       return;
     }
     // save new password
-    const hash = (await axios.get(`${config.api}/auth-access`, {params: {
+    const hash = (await axios.get(`${config.api.general}/auth-access`, {params: {
       action: 'generate',
       password: newPassword,
       hash: '',
     }})).data;
     const newUser = { ...props.user, password: hash };
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Users',
       data: newUser
     });
@@ -110,14 +80,9 @@ const Account = () => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={[styles.container, globalStyles.safeArea]}>
           <KeyboardAvoidingView style={[globalStyles.flex1]} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
-            <Toolbar text='帳號'/>
+            <TopbarWithGoBack text='帳號'/>
             <ScrollView style={[globalStyles.flex1]}>
               <Pressable>
-                {/* <View style={[styles.inputGroup, globalStyles.flexRow, globalStyles.alignItems.center]}>
-                  <Text style={styles.label}>ID</Text>
-                  <TextInput style={[styles.input, focusing === 'userId' ? styles.focus : {}]} onBlur={() => setFocusing('')} onFocus={() => setFocusing('userId')} placeholder='ID' value={userId} onChangeText={text => setUserId(text)} numberOfLines={1}/>
-                  <Button onPress={changeId} icon={loading ? <ActivityIndicator color={'#fff'} size={13}/> : <Text style={[styles.buttonText]}>儲存</Text>} style={[styles.saveButton, userId === props.user.id || userId.length === 0 ? { backgroundColor: '#ddd' } : {}]}/>
-                </View> */}
                 {errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>}
                 <View style={[styles.inputGroup, globalStyles.flexRow, globalStyles.alignItems.center]}>
                   <Text style={styles.label}>密碼</Text>

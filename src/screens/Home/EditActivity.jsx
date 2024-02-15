@@ -1,20 +1,19 @@
 import { View, Text, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, Keyboard, TextInput, SafeAreaView, ScrollView, Pressable, TouchableWithoutFeedback } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import Toolbar from '../../components/Toolbar';
+import TopbarWithGoBack from '../../components/TopbarWithGoBack';
 import { globalStyles } from '../../utils/Constants';
 import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString, getDateStringsBetween, cancelScheduledNotification, schedulePushNotification } from '../../utils/Functions';
 import Button from '../../components/Button';
 import { useHomeState } from '../../context/HomeContext';
 import { useAppState } from '../../context/AppContext';
 import DatePicker from '../../components/DatePicker';
-import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
-import config from '../../../config.json';
+import { config } from '../../utils/config';
 
-const screenWidth = Dimensions.get('window').width;
-const barWidth = screenWidth - 46;
-const buttonWidth = 22;
+var screenWidth = Dimensions.get('window').width;
+var barWidth = screenWidth - 46;
+var buttonWidth = 22;
 
 const EditActivity = ({ navigation, route }) => {
 
@@ -103,7 +102,7 @@ const EditActivity = ({ navigation, route }) => {
       props.setActivities(props.activities.filter(a => a.id !== activity.id));
       navigation.goBack();
       navigation.goBack();
-      await axios.delete(`${config.api}/access-item`, {params: {
+      await axios.delete(`${config.api.general}/access-item`, {params: {
         table: 'Laijoig-Activities',
         id: activity.id
       }});
@@ -127,7 +126,7 @@ const EditActivity = ({ navigation, route }) => {
     // back to home page
     navigation.goBack();
     navigation.goBack();
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Activities',
       data: newActivity
     });
@@ -189,7 +188,7 @@ const EditActivity = ({ navigation, route }) => {
     props.setActivities(props.activities.map(a => a.id === newActivity.id ? newActivity : a));
     // back to home page
     navigation.goBack();
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Activities',
       data: newActivity
     });
@@ -201,7 +200,7 @@ const EditActivity = ({ navigation, route }) => {
         <SafeAreaView style={globalStyles.safeArea}>
           <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
             {/* toolbar */}
-            <Toolbar text={'編輯活動'}/>
+            <TopbarWithGoBack text={'編輯活動'}/>
             <ScrollView style={[styles.body, globalStyles.flex1]}
               onStartShouldSetResponder={() => true}
               onResponderMove={handleMove}
@@ -288,8 +287,6 @@ const EditActivity = ({ navigation, route }) => {
                   <Text style={{ fontSize: 16 }}>通知 ( 活動前30分鐘 )</Text>
                 </View>} onPress={() => setHasNotification(!hasNotification)}/>
 
-                {/* invite people */}
-                
                 {/* margin bottom */}
                 <View style={{ marginBottom: 76 }}/>
 

@@ -64,7 +64,7 @@ const ActivityList = ( props ) => {
       ],
     };
     setShowPartnersActivity(null);
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Activities',
       data: activity
     });
@@ -86,7 +86,7 @@ const ActivityList = ( props ) => {
       partners: activity.partners.filter(p => p.userId !== partner.userId),
     };
     props.setActivities(props.activities.map(a => a.id === activity.id ? activity : a));
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Activities',
       data: activity
     });

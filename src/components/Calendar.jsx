@@ -1,11 +1,7 @@
 import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import Button from './Button';
-import { Entypo } from '@expo/vector-icons';
 import { globalStyles, weekDays } from '../utils/Constants';
 import { getDateString, getMonthBoard } from '../utils/Functions';
-import axios from 'axios';
-import config from '../../config.json';
 
 const Calendar = ( props ) => {
   const now = new Date();

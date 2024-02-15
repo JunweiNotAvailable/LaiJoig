@@ -8,7 +8,7 @@ import { useAuthState } from '../../context/AuthContext';
 import { useAppState } from '../../context/AppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import config from '../../../config.json';
+import { config } from '../../utils/config';
 import { registerForPushNotificationsAsync } from '../../utils/Functions';
 import Loading from '../../components/Loading';
 
@@ -29,12 +29,12 @@ const SignInPassword = ({ navigation }) => {
     setLoading(true);
 
     // check password
-    const user = (await axios.get(`${config.api}/access-item`, {params: {
+    const user = (await axios.get(`${config.api.general}/access-item`, {params: {
       table: 'Laijoig-Users',
       id: props.userId
     }})).data.Item;
     const hash = user.password;
-    const isMatch = (await axios.get(`${config.api}/auth-access`, {params: {
+    const isMatch = (await axios.get(`${config.api.general}/auth-access`, {params: {
       action: 'compare',
       password: password,
       hash: hash
@@ -48,13 +48,13 @@ const SignInPassword = ({ navigation }) => {
     }
 
     // login
-    const group = (await axios.get(`${config.api}/access-item`, {params: {
+    const group = (await axios.get(`${config.api.general}/access-item`, {params: {
       table: 'Laijoig-Groups',
       id: user.selectedGroup,
     }})).data.Item;
     const deviceToken = await registerForPushNotificationsAsync();
 
-    const newPassword = hash === '' ? (await axios.get(`${config.api}/auth-access`, {params: {
+    const newPassword = hash === '' ? (await axios.get(`${config.api.general}/auth-access`, {params: {
       action: 'generate',
       password: password,
       hash: '',
@@ -66,7 +66,7 @@ const SignInPassword = ({ navigation }) => {
     await AsyncStorage.setItem('LaijoigUserId', user.id);
     navigation.replace('Main');
     // get device token
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Users',
       data: newUser
     });

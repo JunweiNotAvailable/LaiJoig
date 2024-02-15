@@ -1,6 +1,5 @@
 import { View, Text, Image, Animated, Easing, StyleSheet } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import { globalStyles } from '../utils/Constants';
 import { useAppState } from '../context/AppContext';
 
 const Loading = ({ size, color, type, white }) => {

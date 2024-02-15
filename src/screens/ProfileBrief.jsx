@@ -1,15 +1,12 @@
 import { SafeAreaView, TouchableWithoutFeedback, Image, Keyboard, View, Text, StyleSheet, ScrollView } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react';
-import { globalStyles, urls } from '../utils/Constants';
+import React, { useEffect, useState } from 'react';
+import { globalStyles } from '../utils/Constants';
 import { useAppState } from '../context/AppContext';
-import { useProfileState } from '../context/ProfileContext';
 import { useUtilState } from '../context/UtilContext';
 import Button from '../components/Button';
-import Icon from 'react-native-vector-icons/Ionicons';
-import FeatherIcon from 'react-native-vector-icons/Feather';
 import axios from 'axios';
 import config from '../../config.json';
-import Toolbar from '../components/Toolbar';
+import TopbarWithGoBack from '../components/TopbarWithGoBack';
 import { getAllMonthsBetween, getDateStringsBetween, getTimeString, getDateString } from '../utils/Functions';
 import Activitiy from '../components/Activitiy';
 import Loading from '../components/Loading';
@@ -40,14 +37,14 @@ const ProfileBrief = ({ navigation, route }) => {
       for (const m of allMonths) {
         if (m < nowString) continue; 
         // load activities
-        const activitiesRes = await axios.get(`${config.api}/access-items`, { params: {
+        const activitiesRes = await axios.get(`${config.api.general}/access-items`, { params: {
           table: 'Laijoig-Activities',
           filter: 'dateRange',
           id: props.group.id,
           month: m,
         }});
         // load comments
-        const commentsRes = await axios.get(`${config.api}/access-items`, { params: {
+        const commentsRes = await axios.get(`${config.api.general}/access-items`, { params: {
           table: 'Laijoig-Comments',
           filter: 'date',
           id: props.group.id,
@@ -107,7 +104,7 @@ const ProfileBrief = ({ navigation, route }) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={[globalStyles.safeArea, globalStyles.flex1]}>
           <View style={[styles.body, globalStyles.flex1]}>
-            <Toolbar text={''}/>
+            <TopbarWithGoBack text={''}/>
             {/* profile view */}
             <View style={styles.profileView}>
               {/* avatar & username */}

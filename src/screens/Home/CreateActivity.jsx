@@ -1,6 +1,6 @@
 import { View, Text, Image, StyleSheet, Dimensions, Platform, KeyboardAvoidingView, Keyboard, TextInput, SafeAreaView, ScrollView, Pressable, TouchableWithoutFeedback } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import Toolbar from '../../components/Toolbar';
+import TopbarWithGoBack from '../../components/TopbarWithGoBack';
 import { globalStyles } from '../../utils/Constants';
 import { getDateString, getDateStringCh, getTimeFromMinutes, getMinutesFromString, to12HourFormat, getRandomString, schedulePushNotification, getDateStringsBetween, sendPushNotification } from '../../utils/Functions';
 import Button from '../../components/Button';
@@ -10,11 +10,11 @@ import DatePicker from '../../components/DatePicker';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
-import config from '../../../config.json';
+import { config } from '../../utils/config';
 
-const screenWidth = Dimensions.get('window').width;
-const barWidth = screenWidth - 46;
-const buttonWidth = 22;
+var screenWidth = Dimensions.get('window').width;
+var barWidth = screenWidth - 46;
+var buttonWidth = 22;
 
 const CreateActivity = () => {
 
@@ -106,7 +106,7 @@ const CreateActivity = () => {
       iso: new Date().toISOString(),
     };
     for (const uid of invitingUsers) {
-      let userInvitaions = (await axios.get(`${config.api}/access-item`, {params: {
+      let userInvitaions = (await axios.get(`${config.api.general}/access-item`, {params: {
         table: 'Laijoig-Invitations',
         id: uid,
       }})).data.Item;
@@ -114,7 +114,7 @@ const CreateActivity = () => {
         id: props.user.id,
         invitations: userInvitaions ? [...userInvitaions.invitations, invitation] : [invitation],
       };
-      await axios.post(`${config.api}/access-item`, {
+      await axios.post(`${config.api.general}/access-item`, {
         table: 'Laijoig-Invitations',
         data: userInvitaions,
       });
@@ -128,11 +128,11 @@ const CreateActivity = () => {
     // back to home page
     navigation.goBack();
     // store to database
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Activities',
       data: newActivity
     });
-    await axios.post(`${config.api}/access-item`, {
+    await axios.post(`${config.api.general}/access-item`, {
       table: 'Laijoig-Users',
       data: newUser
     });
@@ -156,7 +156,7 @@ const CreateActivity = () => {
         <SafeAreaView style={globalStyles.safeArea}>
           <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'android' ? 'none' : 'padding'}>
             {/* toolbar */}
-            <Toolbar text={'新增活動'}/>
+            <TopbarWithGoBack text={'新增活動'}/>
             <ScrollView style={[styles.body, globalStyles.flex1]}
               onStartShouldSetResponder={() => true}
               onResponderMove={handleMove}
@@ -242,40 +242,6 @@ const CreateActivity = () => {
                   </View>
                   <Text style={{ fontSize: 16 }}>通知 ( 活動前30分鐘 )</Text>
                 </View>} onPress={() => setHasNotification(!hasNotification)}/>
-
-                {/* invite people */}
-                {/* <Text style={[styles.subtitle, { marginTop: 16 }]}>邀請 ( {invitingUsers.length} )</Text>
-                <View style={[globalStyles.flexRow]}>
-                  <Button text='邀請所有人' style={styles.allDayButton} textStyle={styles.allDayText}
-                    onPress={() => setInvitingUsers(props.users.filter(u => u.id !== props.user.id).map(u => u.id))}
-                  />
-                </View>
-                <ScrollView style={styles.usersList} nestedScrollEnabled={true}>
-                  <Pressable>
-                    {props.users.filter(u => u.id !== props.user.id).map((u, i) => {
-                      const url = props.urls[u.id];
-                      return (
-                        <TouchableWithoutFeedback key={u.id} onPress={() => {
-                          if (!invitingUsers.includes(u.id)) {
-                            setInvitingUsers([...invitingUsers, u.id]);
-                          } else {
-                            setInvitingUsers(invitingUsers.filter(id => id !== u.id));
-                          }
-                        }}>
-                          <View style={[invitingUsers.includes(u.id) ? styles.inviting : {}, styles.invitingUser, globalStyles.flexRow, globalStyles.alignItems.center]}>
-                            <View style={[styles.taggingAvatar, { backgroundColor: u.color }]}>
-                              {url ? <Image source={{ uri: url }} style={styles.taggingAvatarImage} /> : <Text style={styles.taggingAvatarText}>{u.name[0]}</Text>}
-                            </View>
-                            <View style={styles.taggingUserInfo}>
-                              <Text style={styles.taggingUsername}>{u.name}</Text>
-                              <Text style={styles.taggingUserId}>{u.id}</Text>
-                            </View>
-                          </View>
-                        </TouchableWithoutFeedback>
-                      )
-                    })}
-                  </Pressable>
-                </ScrollView> */}
                 
                 {/* margin bottom */}
                 <View style={{ marginBottom: 76 }}/>

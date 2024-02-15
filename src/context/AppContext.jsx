@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, createContext, useContext, useState } from 'react';
 import { getImageUrl } from '../utils/Functions';
 import axios from 'axios';
-import config from '../../config.json';
+import { config } from '../utils/config';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -10,30 +10,6 @@ const AppStateContext = createContext();
 
 // Create a provider component
 export const AppStateProvider = ({ children }) => {
-  
-  // useEffect(() => {
-  //   (async () => {
-  //     const data = (await axios.get(`${config.api}/access-items`, {params: {
-  //       table: 'Laijoig-Activities',
-  //       filter: '',
-  //     }})).data;
-  //     console.log(data);
-  //     for (const a of data) {
-  //       if (a.userId === '張涵柔') {
-  //         const na = {
-  //           ...a,
-  //           userId: 'hzzzzz._.',
-  //         }
-  //         await axios.post(`${config.api}/access-item`, {
-  //           table: 'Laijoig-Activities',
-  //           data: na
-  //         })
-  //         console.log('done')
-  //       }
-  //     }
-  //   })();
-  // }, []);
-
 
   const [user, setUser] = useState(null);
   // data of user
@@ -41,7 +17,7 @@ export const AppStateProvider = ({ children }) => {
   const [groups, setGroups] = useState([]);
   const [group, setGroup] = useState(null);
   const [urls, setUrls] = useState({});
-  
+
   const [preference, setPreference] = useState({});
   const [notifications, setNotifications] = useState([]);
   // notification data
@@ -64,19 +40,23 @@ export const AppStateProvider = ({ children }) => {
       const messageId = notification.request.content.data.messageId;
       const activityId = notification.request.content.data.activityId;
       if (commentId) { // if it's comment
-        const comment = (await axios.get(`${config.api}/access-item`, {params: {
-          table: 'Laijoig-Comments',
-          id: commentId
-        }})).data.Item;
+        const comment = (await axios.get(`${config.api.general}/access-item`, {
+          params: {
+            table: 'Laijoig-Comments',
+            id: commentId
+          }
+        })).data.Item;
         setReceivedComment(comment);
       } else if (messageId) { // if it's message
 
       } else if (activityId) { // if it's invitation
         // invitations
-        const newInvitations = (await axios.get(`${config.api}/access-item`, {params: {
-          table: 'Laijoig-Invitations',
-          id: user.id,
-        }})).data.Item;
+        const newInvitations = (await axios.get(`${config.api.general}/access-item`, {
+          params: {
+            table: 'Laijoig-Invitations',
+            id: user.id,
+          }
+        })).data.Item;
         setInvitations(newInvitations);
       }
     });
@@ -87,14 +67,16 @@ export const AppStateProvider = ({ children }) => {
       const messageId = response.notification.request.content.data.messageId;
       const activityId = response.notification.request.content.data.activityId;
       if (commentId) { // if it's comment
-        const comment = (await axios.get(`${config.api}/access-item`, {params: {
-          table: 'Laijoig-Comments',
-          id: commentId
-        }})).data.Item;
+        const comment = (await axios.get(`${config.api.general}/access-item`, {
+          params: {
+            table: 'Laijoig-Comments',
+            id: commentId
+          }
+        })).data.Item;
         setReceivedComment(comment);
         setGoToNotifications(response.notification.request.identifier);
       } else if (messageId) { // if it's message
-        
+
       } else if (activityId) { // if it's invitation
         setGoToInvitations(true);
       }
@@ -116,14 +98,16 @@ export const AppStateProvider = ({ children }) => {
         calendarFormat: await AsyncStorage.getItem('calendarFormat') || 'standard',
       });
       // notificaitons
-      const data = (await axios.get(`${config.api}/access-items`, {params: {
-        table: 'Laijoig-Notifications',
-        filter: ''
-      }})).data;
+      const data = (await axios.get(`${config.api.general}/access-items`, {
+        params: {
+          table: 'Laijoig-Notifications',
+          filter: ''
+        }
+      })).data;
       setNotifications(data);
     })();
   }, []);
-  
+
   // load urls after loaded users
   useEffect(() => {
     (async () => {
@@ -137,32 +121,26 @@ export const AppStateProvider = ({ children }) => {
       setUrls(newUrls);
     })();
   }, [users]);
-  
+
   // load data after user
   useEffect(() => {
     if (user) {
       (async () => {
-        // const newUsers = [];
-        // for (const id of user.bosom) {
-        //   const newUser = (await axios.get(`${config.api}/access-item`, {params: {
-        //     table: 'Laijoig-Users',
-        //     id: id
-        //   }})).data.Item;
-        //   newUsers.push(newUser);
-        // }
-        // setUsers([...newUsers, user]);
-        
         // users
-        const newUsers = (await axios.get(`${config.api}/access-items`, {params: {
-          table: 'Laijoig-Users',
-          filter: ''
-        }})).data;
+        const newUsers = (await axios.get(`${config.api.general}/access-items`, {
+          params: {
+            table: 'Laijoig-Users',
+            filter: ''
+          }
+        })).data;
         setUsers(newUsers);
         // invitations
-        const newInvitations = (await axios.get(`${config.api}/access-item`, {params: {
-          table: 'Laijoig-Invitations',
-          id: user.id,
-        }})).data.Item;
+        const newInvitations = (await axios.get(`${config.api.general}/access-item`, {
+          params: {
+            table: 'Laijoig-Invitations',
+            id: user.id,
+          }
+        })).data.Item;
         setInvitations(newInvitations);
       })();
     }
@@ -174,10 +152,12 @@ export const AppStateProvider = ({ children }) => {
       (async () => {
         const newActivities = [];
         for (const invitation of invitations.invitations) {
-          const data = (await axios.get(`${config.api}/access-item`, {params: {
-            table: 'Laijoig-Activities',
-            id: invitation.activityId,
-          }})).data.Item;
+          const data = (await axios.get(`${config.api.general}/access-item`, {
+            params: {
+              table: 'Laijoig-Activities',
+              id: invitation.activityId,
+            }
+          })).data.Item;
           if (data) {
             newActivities.push(data);
           }
@@ -188,7 +168,7 @@ export const AppStateProvider = ({ children }) => {
   }, [invitations]);
 
   return (
-    <AppStateContext.Provider value={{ 
+    <AppStateContext.Provider value={{
       user, setUser,
       users, setUsers,
       group, setGroup,
