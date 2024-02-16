@@ -26,7 +26,7 @@ The home page contains a calendar, and a list of events below it.
 <img src="https://github.com/JunweiNotAvailable/LaiJoig/assets/89463326/cac90a3a-3a83-4ebe-afcb-db5b0ac9bd5b" alt="" width="180" >
 
 ### 3. Notifications page
-At first, there was no **push notification** on this app, this page is to follow the most recent messages or activities
+At first, there was no **push notification** on this app, this page is to let people follow the most recent messages or activities
 
 <img src="https://github.com/JunweiNotAvailable/LaiJoig/assets/89463326/309c2ba1-1f0d-468e-98cb-494808f2d05c" alt="" width="180" >
 
@@ -39,7 +39,7 @@ To view other's profile and their upcoming activities.
 I could see both **iOS** and **Andriod** devices among my friends. And to **build an app for both platform at the same time**, I chose React Native as the tool to start it.
 
 ### 2. DynamoDB
-I chose AWS DynamoDB as the database to store **user data**, **activities** and **messages**.
+I chose [AWS DynamoDB](https://aws.amazon.com/tw/pm/dynamodb/), a NoSQL database, as the database to store **user data**, **activities** and **messages**.
 
 ### 3. S3
 AWS S3 is a cheap solution I found for storing large data like **users' pictures**.
@@ -51,14 +51,23 @@ To communicate between the frontend and the cloud, I used services provided by A
 - **Lambda** - Create custom functions to access the database and the S3 bucket
 
 ### 5. Expo Notification
-It took me a long time to add the **push notification** feature. I eventually implemented it with Expo Nitification provided by [Expo](https://expo.dev)
+It took me a long time to add the **push notification** feature. I eventually implemented it with [Expo Notification](https://docs.expo.dev/versions/latest/sdk/notifications/) provided by [Expo](https://expo.dev)
 
 <img src="https://github.com/JunweiNotAvailable/LaiJoig/assets/89463326/ad28eabe-5ae4-4056-874c-7da6f45e070e" alt="" width="180" >
 
 ### 6. Hash algorithm
 A user's information is visible to the app owner, including the password.
 
-Therefore, in one of the lambda function, I **hashed the password** before storing into the database to make sure even the data manager (me) couldn't see the passwords. 
+Therefore, in one of the lambda function, I **hashed the password** before storing into the database to make sure even the data manager (me) couldn't see the passwords.
+```javascript
+const { action, password } = event.queryStringParameters;
+
+if (action === 'generate') { // generate a hash before storing into database
+  return await bcrypt.hash(password, 10);
+} else if (action === 'compare') { // compare user's input to real password
+  return await bcrypt.compare(password, hash);
+}
+```
 
 ## Why I built it
 
