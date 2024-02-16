@@ -1,6 +1,6 @@
 export const config = {
   api: {
-    general: "https://6qhbspfpzf.execute-api.ap-northeast-1.amazonaws.com/production",
-    s3: "https://3tdbs9e5ye.execute-api.ap-northeast-1.amazonaws.com/production",
+    general: process.env.REACT_APP_API_URL_GENERAL,
+    s3: process.env.REACT_APP_API_URL_S3,
   }
 }
