@@ -5,7 +5,7 @@ import { useAppState } from '../context/AppContext';
 import { useUtilState } from '../context/UtilContext';
 import Button from '../components/Button';
 import axios from 'axios';
-import config from '../../config.json';
+import { config } from '../utils/config';
 import TopbarWithGoBack from '../components/TopbarWithGoBack';
 import { getAllMonthsBetween, getDateStringsBetween, getTimeString, getDateString } from '../utils/Functions';
 import Activitiy from '../components/Activitiy';
@@ -26,7 +26,7 @@ const ProfileBrief = ({ navigation, route }) => {
   useEffect(() => {
     setUrl(props.urls[user.id]);
   }, [props.urls]);
-  
+
   useEffect(() => {
     (async () => {
       const nowString = getDateString(new Date()).slice(0, 7);
@@ -35,24 +35,28 @@ const ProfileBrief = ({ navigation, route }) => {
       let newActivities = [];
       let newComments = [];
       for (const m of allMonths) {
-        if (m < nowString) continue; 
+        if (m < nowString) continue;
         // load activities
-        const activitiesRes = await axios.get(`${config.api.general}/access-items`, { params: {
-          table: 'Laijoig-Activities',
-          filter: 'dateRange',
-          id: props.group.id,
-          month: m,
-        }});
+        const activitiesRes = await axios.get(`${config.api.general}/access-items`, {
+          params: {
+            table: 'Laijoig-Activities',
+            filter: 'dateRange',
+            id: props.group.id,
+            month: m,
+          }
+        });
         // load comments
-        const commentsRes = await axios.get(`${config.api.general}/access-items`, { params: {
-          table: 'Laijoig-Comments',
-          filter: 'date',
-          id: props.group.id,
-          month: m
-        }});
+        const commentsRes = await axios.get(`${config.api.general}/access-items`, {
+          params: {
+            table: 'Laijoig-Comments',
+            filter: 'date',
+            id: props.group.id,
+            month: m
+          }
+        });
         // update
-        newActivities = [ ...newActivities, ...activitiesRes.data ].filter(a => a.userId === user.id);
-        newComments = [ ...newComments, ...commentsRes.data ];
+        newActivities = [...newActivities, ...activitiesRes.data].filter(a => a.userId === user.id);
+        newComments = [...newComments, ...commentsRes.data];
       }
       setActivities(Array.from(new Set(newActivities.map(a => a.id))).map(id => newActivities.find(a => a.id === id)));
       setComments(Array.from(new Set(newComments.map(t => t.id))).map(id => newComments.find(t => t.id === id)));
@@ -71,10 +75,10 @@ const ProfileBrief = ({ navigation, route }) => {
       for (const d of allDates) {
         const custom = activity.custom[d];
         if (custom?.delete) continue;
-        const newActivity = { 
-          ...activity, 
-          startDateString: d, 
-          endDateString: d, 
+        const newActivity = {
+          ...activity,
+          startDateString: d,
+          endDateString: d,
           iso: custom?.iso || activity.iso,
           startTime: custom?.startTime || activity.startTime,
           endTime: custom?.endTime || activity.endTime,
@@ -104,14 +108,14 @@ const ProfileBrief = ({ navigation, route }) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <SafeAreaView style={[globalStyles.safeArea, globalStyles.flex1]}>
           <View style={[styles.body, globalStyles.flex1]}>
-            <TopbarWithGoBack text={''}/>
+            <TopbarWithGoBack text={''} />
             {/* profile view */}
             <View style={styles.profileView}>
               {/* avatar & username */}
               <View style={[styles.userInfoRow, globalStyles.flexRow, globalStyles.alignItems.center]}>
                 <TouchableWithoutFeedback onPress={() => setShowingImage(true)}>
                   <View style={[styles.avatar, globalStyles.flexCenter, { backgroundColor: user.color }]}>
-                    {url ? <Image style={styles.avatarImage} source={{ uri: url }}/> : <Text style={styles.avatarText}>{user.name[0]}</Text>}
+                    {url ? <Image style={styles.avatarImage} source={{ uri: url }} /> : <Text style={styles.avatarText}>{user.name[0]}</Text>}
                   </View>
                 </TouchableWithoutFeedback>
                 <View style={styles.userInfo}>
@@ -126,53 +130,53 @@ const ProfileBrief = ({ navigation, route }) => {
             </View>
             <View style={[globalStyles.flexRow, styles.groupsList]}>
               {/* <Button text={'朋友'} style={[styles.groupButton, showingInfo === 'friends' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('friends')}/> */}
-              <Button text={'行程'} style={[styles.groupButton, showingInfo === 'schedule' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('schedule')}/>
+              <Button text={'行程'} style={[styles.groupButton, showingInfo === 'schedule' ? { borderBottomColor: '#000' } : {}]} onPress={() => setShowingInfo('schedule')} />
             </View>
             {/* list */}
-            {showingInfo === 'friends' ? 
+            {showingInfo === 'friends' ?
               users.length > 1 ? <></>
-              : 
-              // empty
-              <View style={[styles.empty, globalStyles.flexCenter]}>
-                <Text style={styles.emptyText}>沒有朋友</Text>
-              </View>
-            : showingInfo === 'schedule' ?
-              splitedActivities.length > 0 ? <ScrollView style={[globalStyles.flex1, styles.activitiesList]}>
-                {splitedActivities.map((activity, i) => {
-                  const activityProps = {
-                    selectedDate: new Date(activity.startDateString),
-                    comments: comments,
-                  };
-                  return (
-                    <View style={[styles.activityContainer, i === 0 ? { marginTop: 0 } : {}]}>
-                      <Activitiy 
-                        { ...props } 
-                        { ...activityProps } 
-                        activity={activity} 
-                        showDate
-                      />
-                    </View>
-                  )
-                })}
-              </ScrollView>
-              : 
-              // empty
-              <View style={[styles.empty, globalStyles.flexCenter]}>
-                {loading ? <Loading/> : <Text style={styles.emptyText}>沒有行程</Text>}
-              </View>
-            : <></>}
+                :
+                // empty
+                <View style={[styles.empty, globalStyles.flexCenter]}>
+                  <Text style={styles.emptyText}>沒有朋友</Text>
+                </View>
+              : showingInfo === 'schedule' ?
+                splitedActivities.length > 0 ? <ScrollView style={[globalStyles.flex1, styles.activitiesList]}>
+                  {splitedActivities.map((activity, i) => {
+                    const activityProps = {
+                      selectedDate: new Date(activity.startDateString),
+                      comments: comments,
+                    };
+                    return (
+                      <View style={[styles.activityContainer, i === 0 ? { marginTop: 0 } : {}]}>
+                        <Activitiy
+                          {...props}
+                          {...activityProps}
+                          activity={activity}
+                          showDate
+                        />
+                      </View>
+                    )
+                  })}
+                </ScrollView>
+                  :
+                  // empty
+                  <View style={[styles.empty, globalStyles.flexCenter]}>
+                    {loading ? <Loading /> : <Text style={styles.emptyText}>沒有行程</Text>}
+                  </View>
+                : <></>}
           </View>
         </SafeAreaView>
       </TouchableWithoutFeedback>
       {/* show image */}
-      {showingImage && 
-      <TouchableWithoutFeedback onPress={() => handleImageClick('bg')}>
-        <View style={styles.imageWindow}>
-          <View style={[styles.avatar, styles.imageAvatar, globalStyles.flexCenter, { backgroundColor: user.color }]}>
-            {url ? <Image style={styles.avatarImage} source={{ uri: url }}/> : <Text style={[styles.avatarText, styles.imageAvatarText]}>{user.name[0]}</Text>}
+      {showingImage &&
+        <TouchableWithoutFeedback onPress={() => handleImageClick('bg')}>
+          <View style={styles.imageWindow}>
+            <View style={[styles.avatar, styles.imageAvatar, globalStyles.flexCenter, { backgroundColor: user.color }]}>
+              {url ? <Image style={styles.avatarImage} source={{ uri: url }} /> : <Text style={[styles.avatarText, styles.imageAvatarText]}>{user.name[0]}</Text>}
+            </View>
           </View>
-        </View>
-      </TouchableWithoutFeedback>}
+        </TouchableWithoutFeedback>}
     </>
   )
 }

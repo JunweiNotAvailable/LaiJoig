@@ -12,7 +12,7 @@ import { useUtilState } from "../context/UtilContext";
 import { useAppState } from "../context/AppContext";
 import Settings from "./Profile/Settings";
 import axios from "axios";
-import config from '../../config.json';
+import { config } from '../utils/config';
 import ProfileSettings from "./Profile/ProfileSettings";
 import NotificationsScreen from "./Profile/Notifications";
 import Account from "./Profile/Account";
@@ -34,7 +34,7 @@ const Home = ({ navigation, route }) => {
       <Stack.Navigator initialRouteName={'Schedule'} screenOptions={{ headerShown: false }}>
         <Stack.Screen name='Schedule' component={Schedule} />
         <Stack.Screen name='CreateActivity' component={CreateActivity} />
-        <Stack.Screen name='EditActivity' component={EditActivity}/>
+        <Stack.Screen name='EditActivity' component={EditActivity} />
         <Stack.Screen name="Comments" component={Comments} />
         <Stack.Screen name="ProfileBrief" component={ProfileBrief} />
         <Stack.Screen name='FullScreenCalendar' component={FullScreenCalendar} />
@@ -49,7 +49,7 @@ const Notifications = () => {
   return (
     <HomeStateProvider>
       <Stack.Navigator initialRouteName="NotificationsScreen" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="NotificationsScreen" component={NotificationsScreen}/>
+        <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
         <Stack.Screen name="Comments" component={Comments} />
       </Stack.Navigator>
     </HomeStateProvider>
@@ -64,13 +64,13 @@ const Profile = ({ navigation, route }) => {
   return (
     <ProfileStateProvider>
       <Stack.Navigator initialRouteName="Overview" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Overview" component={Overview}/>
+        <Stack.Screen name="Overview" component={Overview} />
         <Stack.Screen name="ProfileBrief" component={ProfileBrief} />
         <Stack.Screen name="Comments" component={Comments} />
         <Stack.Screen name="Settings" component={Settings} initialParams={{ toSplash: toSplash }} />
         <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
         <Stack.Screen name="Account" component={Account} />
-        <Stack.Screen name='EditActivity' component={EditActivity}/>
+        <Stack.Screen name='EditActivity' component={EditActivity} />
         <Stack.Screen name="Preference" component={Preference} />
       </Stack.Navigator>
     </ProfileStateProvider>
