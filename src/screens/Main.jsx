@@ -86,7 +86,7 @@ const Main = ({ navigation, route }) => {
     async function loadGroups() {
       const newGroups = [];
       for (const id of props.user.groups) {
-        const res = (await axios.get(`${config.api}/access-item`, {
+        const res = (await axios.get(`${config.api.general}/access-item`, {
           params: {
             table: 'Laijoig-Groups',
             id: id,

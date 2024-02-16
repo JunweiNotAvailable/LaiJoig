@@ -18,13 +18,13 @@ const Splash = ({ navigation, route }) => {
       const userId = await AsyncStorage.getItem('LaijoigUserId');
       if (userId) {
         // load user from database
-        const user = (await axios.get(`${config.api}/access-item`, {
+        const user = (await axios.get(`${config.api.general}/access-item`, {
           params: {
             table: 'Laijoig-Users',
             id: userId
           }
         })).data.Item;
-        const group = (await axios.get(`${config.api}/access-item`, {
+        const group = (await axios.get(`${config.api.general}/access-item`, {
           params: {
             table: 'Laijoig-Groups',
             id: user.selectedGroup
@@ -36,7 +36,7 @@ const Splash = ({ navigation, route }) => {
         props.setUser(newUser);
         props.setGroup(group);
         navigation.replace('Main');
-        await axios.post(`${config.api}/access-item`, {
+        await axios.post(`${config.api.general}/access-item`, {
           table: 'Laijoig-Users',
           data: newUser
         });
