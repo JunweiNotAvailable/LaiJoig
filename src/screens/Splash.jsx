@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 import { useAppState } from '../context/AppContext';
 import { globalStyles } from '../utils/Constants';
 import axios from 'axios';
-import config from '../../config.json';
+import { config } from '../utils/config';
 import { registerForPushNotificationsAsync } from '../utils/Functions';
 
 const Splash = ({ navigation, route }) => {
@@ -18,14 +18,18 @@ const Splash = ({ navigation, route }) => {
       const userId = await AsyncStorage.getItem('LaijoigUserId');
       if (userId) {
         // load user from database
-        const user = (await axios.get(`${config.api}/access-item`, {params: {
-          table: 'Laijoig-Users',
-          id: userId
-        }})).data.Item;
-        const group = (await axios.get(`${config.api}/access-item`, {params: {
-          table: 'Laijoig-Groups',
-          id: user.selectedGroup
-        }})).data.Item;
+        const user = (await axios.get(`${config.api}/access-item`, {
+          params: {
+            table: 'Laijoig-Users',
+            id: userId
+          }
+        })).data.Item;
+        const group = (await axios.get(`${config.api}/access-item`, {
+          params: {
+            table: 'Laijoig-Groups',
+            id: user.selectedGroup
+          }
+        })).data.Item;
         // get token
         const deviceToken = await registerForPushNotificationsAsync();
         const newUser = { ...user, deviceToken: deviceToken };
@@ -46,7 +50,7 @@ const Splash = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
-        <Image source={logoUrl} style={styles.image}/>
+        <Image source={logoUrl} style={styles.image} />
       </View>
     </View>
   )
