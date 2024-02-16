@@ -224,16 +224,6 @@ const Schedule = ({ navigation, route }) => {
             </View>
             <Text style={{ ...styles.logoText, fontFamily: fontsLoaded ? 'Logo' : '' }}>Laijoig</Text>
           </View>
-          <View style={[globalStyles.flexRow]}>
-            {props.group.id !== 'first-group' && <Button text='成員' style={styles.inviteButton} textStyle={{ fontSize: 13, }} onPress={() => {
-              setInviting(true);
-              setSelectingUsers([]);
-            }}/>}
-            <Button icon={<View style={[globalStyles.flexRow, globalStyles.alignItems.center]}>
-              <Text>{props.group.name}</Text>
-              <Entypo name="chevron-down" size={16} style={{ marginLeft: 8 }}/>
-            </View>} onPress={() => setChangingGroup(true)}/>
-          </View>
         </View>
         <View style={styles.shadowContainer}>
           <View style={styles.body}>
