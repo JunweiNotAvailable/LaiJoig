@@ -71,4 +71,4 @@ if (action === 'generate') { // generate a hash before storing into database
 
 ## Why I built it
 
-To know my motivation behind it, go to my personal website: https://junweinotavailable.netlify.app/laijoig
+To know my motivation behind it, go to my personal website: https://junweiavailable.netlify.app/laijoig
